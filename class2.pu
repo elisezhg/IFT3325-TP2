@@ -1,0 +1,75 @@
+@startuml
+skinparam defaultFontName Courier 10 Pitch
+class CharFrame{
+	-flag: String
+	-type: String
+	-num: String
+	-data: String
+	-crc: String
+
+	/'the idea is for the constructor to immediately convert fields to
+	easier to work with bit strings'/
+	+CharFrame(type:char, num:char, data:String)
+	+getFlag():String
+	+getType():char
+	+setType(type:char)
+	+getNum():int
+	+setNum(num:char)
+	+getData():String
+	+setData(data:String)
+	+stuff()
+	+destuff()
+	+computeCRC():String
+	+format():String
+}
+class CheckSumCalculator{
+	{static} +computeCRC(bitstring:String):String
+	{static} +validate(bitstring:String, crc:String):boolean
+}
+class BitStuffer{
+	{static} +stuff(bitstring:String):String
+	{static} +destuff(bitstring:String):String
+}
+class FrameFileReader{
+
+	+openFile(filename: String, flag:String):boolean
+	+closeFile()
+	+getNextFrame():CharFrame
+
+}
+class CLI{
+	+startREPL()
+}
+class Test{
+	+runTests()
+}
+class Server{
+	-name
+}
+
+class Receiver{
+	-port:int
+
+	+listen(port:int)
+	-sendReceipt(type:String)
+}
+class Sender{
+	-sentFrames:String[7]/'needed to resend'/
+
+	+send(name:String, port:int, filename:String)
+	-sendFrame(name:String, port:int, frame:CharFrame)
+}
+
+CLI --> Sender
+CLI --> Server
+Server *-- Receiver
+
+FrameFileReader ..> CharFrame
+CharFrame --> CheckSumCalculator
+CharFrame --> BitStuffer
+
+CLI --> Test
+Sender --> FrameFileReader
+Sender ..> CharFrame
+Receiver ..> CharFrame
+@enduml
