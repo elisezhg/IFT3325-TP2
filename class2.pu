@@ -43,9 +43,6 @@ class CLI{
 class Test{
 	+runTests()
 }
-class Server{
-	-name
-}
 
 class Receiver{
 	-port:int
@@ -61,8 +58,7 @@ class Sender{
 }
 
 CLI --> Sender
-CLI --> Server
-Server *-- Receiver
+CLI --> Receiver
 
 FrameFileReader ..> CharFrame
 CharFrame --> CheckSumCalculator
