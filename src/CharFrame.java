@@ -9,11 +9,12 @@ public class CharFrame {
     /**
      * @return str padded with '0' to the left to reach target length
      */
-    private String padLeft(String str, int targetLength){
+    private static String padLeft(String str, char pad, int targetLength){
 	StringBuilder result = new StringBuilder(str);
 	while(result.length() < targetLength){
-	    result.insert(0, '0');
+	    result.insert(0, pad);
 	}
+	return result.toString();
     }
     /**
      * @param flag signals start and end of frame
@@ -23,11 +24,11 @@ public class CharFrame {
      * @param polynomial polynomial to be used for checksum
      */
     public CharFrame( char type, char num, String data, String polynomial) {
-	this.type = padLeft(Integer.toBinaryString(type), 8);
-	this.num = padLeft(Integer.toBinaryString(num), 8);
+	this.type = padLeft(Integer.toBinaryString(type), '0', 8);
+	this.num = padLeft(Integer.toBinaryString(num), '0', 8);
 	StringBuilder dataBits = new StringBuilder();
 	for(int i = 0; i < data.length(); i++)
-	    dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), 8));
+	    dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
 	this.data = dataBits.toString();
 	this.polynomial = polynomial;
     }

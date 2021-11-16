@@ -1,4 +1,5 @@
 package src;
+import java.util.Arrays;
 public class CheckSumCalculator {
 
     private static String xor(String s1, String s2){
@@ -13,45 +14,46 @@ public class CheckSumCalculator {
 
 	return result.toString();
     }
-    private static String cyclicDivisionRest(StringBuilder bitString, String polynomial){
-
-	for(int i = 0; i <= bitString.length() - polynomial.length(); i++){
-	    if(bitString.charAt(i) == '1'){
-		bitString.replace(i, i+polynomial.length(),
+    private static String cyclicDivisionRest(String bitstring, String polynomial){
+	StringBuilder rest = new StringBuilder(bitstring);
+	for(int i = 0; i <= rest.length() - polynomial.length(); i++){
+	    if(rest.charAt(i) == '1'){
+		rest.replace(i, i+polynomial.length(),
 				  xor(polynomial,
-				      bitString.substring(i, i+polynomial.length())))
+				      rest.substring(i, i + polynomial.length())));
 	    }
 	}
-	return bitString.toString();
+	return rest.toString();
     }
 
     /**
      * @return str padded with '0' to the left to reach target length
      */
-    private String padLeft(String str, int targetLength){
+    private static String padLeft(String str, char pad, int targetLength){
 	StringBuilder result = new StringBuilder(str);
 	while(result.length() < targetLength){
-	    result.insert(0, '0');
+	    result.insert(0, pad);
 	}
+	return result.toString();
     }
 
     /**
      * @return 16-bit code that allows for error checking
      */
     public static String computeCRC(String bitstring, String polynomial) {
-	char[] zeros = new char[polynomial.length() - 1;]
+	char[] zeros = new char[polynomial.length() - 1];
 	Arrays.fill(zeros, '0');
 
-	StringBuilder dividend = new StringBuilder(bitString);
+	StringBuilder dividend = new StringBuilder(bitstring);
 	dividend.append(zeros);
 
-	return padLeft(cyclicDivisionRest(dividend, polynomial), 16);
+	return padLeft(cyclicDivisionRest(dividend.toString(), polynomial), '0', 16);
     }
     /**
      * @return true if the polynomial divides bitstring mod 2
      */
     public static boolean validate(String bitstring, String polynomial) {
-	return Integer.parseInt(cyclicDivisionRest(bitString, polynomial), 2) == 0;
+	return Integer.parseInt(cyclicDivisionRest(bitstring, polynomial), 2) == 0;
     }
 
 }
