@@ -5,11 +5,12 @@ class CharFrame{
 	-type: String
 	-num: String
 	-data: String
-	-crc: String
+	-polynomial:String
 
 	/'the idea is for the constructor to immediately convert fields to
 	easier to work with bit strings'/
-	+CharFrame(type:char, num:char, data:String)
+	+CharFrame(flag:char, type:char, num:char, data:String, polynomial:String)
+	+CharFrame(frame:String)
 	+getFlag():String
 	+getType():char
 	+setType(type:char)
@@ -17,8 +18,6 @@ class CharFrame{
 	+setNum(num:char)
 	+getData():String
 	+setData(data:String)
-	+stuff()
-	+destuff()
 	+computeCRC():String
 	+format():String
 }
