@@ -2,6 +2,7 @@ package src;
 import java.util.Arrays;
 public class CheckSumCalculator {
 
+    //PRIVATE METHODS
     private static String xor(String s1, String s2){
 
 	StringBuilder result = new StringBuilder();
@@ -23,6 +24,10 @@ public class CheckSumCalculator {
 				      rest.substring(i, i + polynomial.length())));
 	    }
 	}
+	//remove leading zeros
+	while (rest.charAt(0) == '0') {
+		rest.deleteCharAt(0);
+	}
 	return rest.toString();
     }
 
@@ -36,7 +41,7 @@ public class CheckSumCalculator {
 	}
 	return result.toString();
     }
-
+    //PUBLIC METHODS
     /**
      * @return 16-bit code that allows for error checking
      */

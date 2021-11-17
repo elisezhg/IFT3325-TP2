@@ -1,11 +1,18 @@
 package src;
 public class CharFrame {
-    private String flag = "01111110";
+    //CONSTANTS
+    private static final int TYPE_BITSIZE=8;
+    private static final int NUM_BITSIZE=8;
+    private static final int CRC_BITSIZE=16;//if it is determined from polynomial, a constant in CheckSumCalculator.computeCRC has to be changed
+    private static final String FLAG = "01111110";
+
+    //FIELDS
     private String type;
     private String num;
     private String data;
     private String polynomial;
 
+    //PRIVATE METHODS
     /**
      * @return str padded with '0' to the left to reach target length
      */
@@ -16,8 +23,9 @@ public class CharFrame {
 	}
 	return result.toString();
     }
+    //PUBLIC METHODS
     /**
-     * @param flag signals start and end of frame
+     * @param FLAG signals start and end of frame
      * @param type type of the frame (e.g. 'R' for REJ)
      * @param num frame numerotation in the window
      * @param data content as string of characters
@@ -33,12 +41,25 @@ public class CharFrame {
 	this.polynomial = polynomial;
     }
     /**
-     * @param frame formated frame
+     * @param frame formated frame (bitstring)
      * @param polynomial polynomial to be used for checksum
      * @throws BadTransmissionException if frame has invalid flags or checksum
      */
     public CharFrame(String frame, String polynomial) throws InvalidFrameException{
-	//TODO
+	if(!frame.substring(0, FLAG.length()).equals(FLAG) || !frame.substring(frame.length() - FLAG.length()).equals(FLAG)){
+	    //if flag is not found at start and end of frame
+	    throw new InvalidFrameException();
+	}
+	String content = BitStuffer.destuff(frame.substring(FLAG.length(), frame.length() - FLAG.length()));
+	if(!CheckSumCalculator.validate(content, polynomial)){
+	    //if checksum is invalid
+	    throw new InvalidFrameException();
+	}
+	this.type = content.substring(0, TYPE_BITSIZE);
+	this.num = content.substring(TYPE_BITSIZE, TYPE_BITSIZE + NUM_BITSIZE);
+	this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
+	this.polynomial = polynomial;
+
     }
 
     public char getType(){
@@ -56,7 +77,7 @@ public class CharFrame {
     public String getData(){
 	return data;
     }
-    public void setString(String data){
+    public void setData(String data){
 	this.data = data;
     }
     /**
@@ -71,6 +92,6 @@ public class CharFrame {
      * @return this CharFrame as a string ready to be sent
      */
     public String format() {
-	return flag + BitStuffer.stuff(type + num + data + computeCRC()) + flag;
+	return FLAG + BitStuffer.stuff(type + num + data + computeCRC()) + FLAG;
     }
 }
