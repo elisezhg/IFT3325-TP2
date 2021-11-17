@@ -1,10 +1,11 @@
 package src;
 public class CharFrame {
     //CONSTANTS
-    private static final int TYPE_BITSIZE=8;
-    private static final int NUM_BITSIZE=8;
-    private static final int CRC_BITSIZE=16;//if it is determined from polynomial, a constant in CheckSumCalculator.computeCRC has to be changed
-    private static final String FLAG = "01111110";
+    public static final int TYPE_BITSIZE=8;
+    public static final int NUM_BITSIZE=8;
+    public static final int CRC_BITSIZE=16;
+    public static final String FLAG = "01111110";
+    public static final char FLAG_CHAR = '~';
 
     //FIELDS
     private String type;
@@ -25,11 +26,10 @@ public class CharFrame {
     }
     //PUBLIC METHODS
     /**
-     * @param FLAG signals start and end of frame
      * @param type type of the frame (e.g. 'R' for REJ)
      * @param num frame numerotation in the window
      * @param data content as string of characters
-     * @param polynomial polynomial to be used for checksum
+     * @param polynomial polynomial to be used for checksum in bitstring
      */
     public CharFrame( char type, char num, String data, String polynomial) {
 	this.type = padLeft(Integer.toBinaryString(type), '0', 8);
@@ -79,6 +79,14 @@ public class CharFrame {
     }
     public void setData(String data){
 	this.data = data;
+    }
+
+    public String getPolynomial() {
+	return polynomial;
+    }
+
+    public void setPolynomial(String polynomial) {
+	this.polynomial = polynomial;
     }
     /**
      * computes checksum for the frame
