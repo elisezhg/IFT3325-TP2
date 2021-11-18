@@ -31,9 +31,8 @@ public class CharFrame {
      * @param data content as string of characters
      * @param polynomial polynomial to be used for checksum in bitstring
      */
-    public CharFrame( char type, char num, String data, String polynomial) {
-	this.type = padLeft(Integer.toBinaryString(type), '0', 8);
-	this.num = padLeft(Integer.toBinaryString(num), '0', 8);
+    public CharFrame( char type, String data, String polynomial) {
+	this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
 	StringBuilder dataBits = new StringBuilder();
 	for(int i = 0; i < data.length(); i++)
 	    dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
@@ -66,19 +65,30 @@ public class CharFrame {
 	return (char) Integer.parseInt(type, 2);
     }
     public void setType(char type){
-	this.type = Integer.toBinaryString(type);
+	this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
     }
     public char getNum(){
 	return (char) Integer.parseInt(num, 2);
     }
-    public void setNum(char num){
-	this.num = Integer.toBinaryString(num);
+    public void setNum(int num){
+	String numstr = Integer.toBinaryString(num);
+	if(NUM_BITSIZE < numstr.length()){
+	    throw new IllegalArgumentException("arg int num is not small enough to be represented over " + NUM_BITSIZE + " bits");
+	}
+	this.num = numstr;
     }
     public String getData(){
 	return data;
     }
+
+    /**
+     * @param data as plain text
+     */
     public void setData(String data){
-	this.data = data;
+	StringBuilder dataBits = new StringBuilder();
+	for(int i = 0; i < data.length(); i++)
+	    dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
+	this.data = dataBits.toString();
     }
 
     public String getPolynomial() {

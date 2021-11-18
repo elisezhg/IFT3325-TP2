@@ -31,24 +31,17 @@ public class FrameFileReader {
      *
      * @return read frame
      */
-    public CharFrame getNextFrame(String polynomial) throws IOException, InvalidFrameFileException{
-        if(reader.read() != CharFrame.FLAG_CHAR)
-            throw new InvalidFrameFileException();
+    public CharFrame getNextFrame(String polynomial) throws IOException{
+	String line = reader.readLine();
 
-        int type = reader.read();
-        int num = reader.read();
-
-        StringBuilder data = new StringBuilder();
-        for (int d = reader.read(); d != CharFrame.FLAG_CHAR; d = reader.read()) {
-            if(d < 0)//unexpected EOF
-                throw new InvalidFrameFileException();
-            data.append((char) d);
+        // EOF
+        if (line == null) {
+            reader.close();
+            return null;
         }
 
-        if(reader.read() != '\n')
-            throw new InvalidFrameFileException();
+        return new CharFrame('I', line, polynomial);
 
-        return new CharFrame((char)type,(char) num, data.toString(), polynomial);
     }
 
     // Reads the next line from the open file and constructs a new frame
@@ -62,7 +55,7 @@ public class FrameFileReader {
             return null;
         }
 
-        CharFrame frame = new CharFrame('I', (char) this.counter, line, null);
+        CharFrame frame = new CharFrame('I', line, null);
         this.counter = (this.counter + 1) % (int) Math.pow(2, FRAME_ENCODING_BITS);
 
         return frame;
