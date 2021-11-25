@@ -27,7 +27,6 @@ public class CharFrame {
     //PUBLIC METHODS
     /**
      * @param type type of the frame (e.g. 'R' for REJ)
-     * @param num frame numerotation in the window
      * @param data content as string of characters
      * @param polynomial polynomial to be used for checksum in bitstring
      */
@@ -38,6 +37,8 @@ public class CharFrame {
 	    dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
 	this.data = dataBits.toString();
 	this.polynomial = polynomial;
+
+	this.num = null;
     }
     /**
      * @param frame formated frame (bitstring)
@@ -67,15 +68,15 @@ public class CharFrame {
     public void setType(char type){
 	this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
     }
-    public char getNum(){
-	return (char) Integer.parseInt(num, 2);
+    public int getNum(){
+	return Integer.parseInt(num, 2);
     }
     public void setNum(int num){
 	String numstr = Integer.toBinaryString(num);
 	if(NUM_BITSIZE < numstr.length()){
 	    throw new IllegalArgumentException("arg int num is not small enough to be represented over " + NUM_BITSIZE + " bits");
 	}
-	this.num = numstr;
+	this.num = padLeft(numstr, '0', NUM_BITSIZE);
     }
     public String getData(){
 	return data;
@@ -109,7 +110,9 @@ public class CharFrame {
      * computes checksum and adds bitstuffing
      * @return this CharFrame as a string ready to be sent
      */
-    public String format() {
+    public String format() throws InvalidFrameException{
+	if(num == null)
+	    throw new InvalidFrameException();
 	return FLAG + BitStuffer.stuff(type + num + data + computeCRC()) + FLAG;
     }
 }

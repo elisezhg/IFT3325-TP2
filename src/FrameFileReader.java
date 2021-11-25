@@ -9,12 +9,12 @@ public class FrameFileReader {
     public static int FRAME_ENCODING_BITS = 3;
 
     private int counter = 0;
-    // private FileReader reader;
     private BufferedReader reader;
+    private String polynomial;
 
-    public FrameFileReader(String filename) throws FileNotFoundException{
-        // reader = new FileReader(filename);
+    public FrameFileReader(String filename, String polynomial) throws FileNotFoundException{
         reader = new BufferedReader(new FileReader(filename));
+	this.polynomial = polynomial;
     }
 
     public void closeFile() throws IOException{
@@ -22,16 +22,11 @@ public class FrameFileReader {
     }
 
     /**
-     * reads a frame from open file.
-     * expected format is :
-     *
-     * {FLAG}{TYPE}{NUM}{DATA}{FLAG}\n
-     * {FLAG}{TYPE}{NUM}{DATA}{FLAG}\n
-     * etc.
-     *
-     * @return read frame
-     */
-    public CharFrame getNextFrame(String polynomial) throws IOException{
+	 * reads a frame from open file.
+	 *
+	 * @return read frame
+	 */
+    public CharFrame getNextFrame() throws IOException{
 	String line = reader.readLine();
 
         // EOF

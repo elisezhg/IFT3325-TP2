@@ -8,7 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Receiver {
-    private int portNumber;
+    public static final String CRC_CCITT = "10001000000100001";
+
 
     /**
      * Listen to the port number
@@ -17,15 +18,15 @@ public class Receiver {
      */
     public void listen(int portNumber) {
         try {
-            ServerSocket serverSocket = new ServerSocket(portNumber);  
+            ServerSocket serverSocket = new ServerSocket(portNumber);
             Socket clientSocket = serverSocket.accept();
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             // for debugging purposes
-            String str = in.readLine();  
+            String str = in.readLine();
             System.out.println("echo " + str);
-            
+
             String frame;
 
             /**
@@ -39,11 +40,11 @@ public class Receiver {
                 // out.println(frame);
             }
 
-            serverSocket.close();  
+            serverSocket.close();
 
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
-                + portNumber + " or listening for a connection");
+			       + portNumber + " or listening for a connection");
             System.out.println(e.getMessage());
         }
 
