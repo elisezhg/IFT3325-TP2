@@ -99,8 +99,6 @@ public class Sender {
 		    }
 		    else {
 			if (receptionFrame.getType() == 'A') {
-			    it.remove();
-			    System.out.println("no " + f.getNum() + " acknowledged");
 			    break;
 			}
 			//else type is 'R'

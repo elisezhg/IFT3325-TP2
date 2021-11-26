@@ -10,7 +10,11 @@ import java.net.Socket;
 public class Receiver {
     public static final String CRC_CCITT = "10001000000100001";
 
+    private int lastReceived;
 
+    public Receiver() {
+	lastReceived = 0;
+    }
     /**
      * Listen to the port number
      * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java
@@ -28,36 +32,43 @@ public class Receiver {
             // System.out.println("echo " + str);
 
             String frame;
+	    CharFrame receivedFrame;
+	    CharFrame RR;
+	    // System.out.println("before unstuffing: " + frame);
 
-            /**
-             * TODO:
-             * - send back appropriate reply: 
-             */
-            while ((frame = in.readLine()) != null) {
-                
-                // System.out.println("before unstuffing: " + frame);
+	    try {
+		receivedFrame = new CharFrame(in.readLine(), CRC_CCITT);
+		System.out.println("Received no " + receivedFrame.getNum()
+				   + " : " + receivedFrame.format());
 
-                try {
-                    CharFrame receivedFrame = new CharFrame(frame, CRC_CCITT);
-                    System.out.println("Received no " + receivedFrame.getNum()
-                                       + " : " + receivedFrame.format());
-                    
-                    // Send confirmation
-                    CharFrame RR = new CharFrame('A', "", CRC_CCITT);
-                    RR.setNum(receivedFrame.getNum() + 1);
-                    out.println(RR.format());
-                    System.out.println("Sending RR: " + RR.format());
+		// Send confirmation
+		RR = new CharFrame('A', "", CRC_CCITT);
+		RR.setNum(receivedFrame.getNum() + 1);
+		out.println(RR.format());
+		System.out.println("Sending RR: " + RR.format());
 
-                } catch(InvalidFrameException e) {
-                    System.out.println("Received invalid frame: " + frame);
-                    CharFrame REJ = new CharFrame('R', "", CRC_CCITT);
-                    REJ.setNum(0); //TODO
-                    out.println(REJ);
+	    } catch(InvalidFrameException e) {
+		System.out.println("Received invalid frame");
+		CharFrame REJ = new CharFrame('R', "", CRC_CCITT);
+		REJ.setNum(0); //TODO
+		out.println(REJ);
 
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-            }
+	    } catch (Exception e) {
+		System.out.println(e);
+	    }
+
+	    //data exchange
+
+	    while(true){
+		try{
+		    receivedFrame = new CharFrame(in.readLine(), CRC_CCITT);
+
+		    break;
+		}catch(InvalidFrameException e){
+		    System.out.println("Received invalid frame");
+		}
+	    }
+
 
             serverSocket.close();
 
