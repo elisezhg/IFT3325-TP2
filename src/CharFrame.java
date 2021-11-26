@@ -115,4 +115,13 @@ public class CharFrame {
 	    throw new InvalidFrameException();
 	return FLAG + BitStuffer.stuff(type + num + data + computeCRC()) + FLAG;
     }
+
+    //debug
+    public static void main(String[] args) {
+	try {
+	    CharFrame cf = new CharFrame("011111100100000100000001001011101101110001111110", Sender.CRC_CCITT);
+	} catch (Exception e) {
+	    System.out.println(e);
+	}
+    }
 }

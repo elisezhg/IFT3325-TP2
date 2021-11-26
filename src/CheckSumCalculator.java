@@ -25,7 +25,7 @@ public class CheckSumCalculator {
 	    }
 	}
 	//remove leading zeros
-	while (rest.charAt(0) == '0') {
+	while (rest.charAt(0) == '0' && rest.length() > 1) {
 		rest.deleteCharAt(0);
 	}
 	return rest.toString();

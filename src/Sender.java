@@ -62,6 +62,8 @@ public class Sender {
 		    break;
 		} catch (InvalidFrameException e) {
 		    System.out.println("Received frame containing errors.");
+		} catch (Exception e) {
+		    System.out.println(e);
 		}
 	    }
 

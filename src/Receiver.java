@@ -24,20 +24,39 @@ public class Receiver {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             // for debugging purposes
-            String str = in.readLine();
-            System.out.println("echo " + str);
+            // String str = in.readLine();
+            // System.out.println("echo " + str);
 
             String frame;
 
             /**
              * TODO:
-             * - unstuff frame
-             * - checksum
-             * - send back appropriate reply
+             * - send back appropriate reply: 
              */
             while ((frame = in.readLine()) != null) {
-                System.out.println(frame);
-                // out.println(frame);
+                
+                // System.out.println("before unstuffing: " + frame);
+
+                try {
+                    CharFrame receivedFrame = new CharFrame(frame, CRC_CCITT);
+                    System.out.println("Received no " + receivedFrame.getNum()
+                                       + " : " + receivedFrame.format());
+                    
+                    // Send confirmation
+                    CharFrame RR = new CharFrame('A', "", CRC_CCITT);
+                    RR.setNum(receivedFrame.getNum() + 1);
+                    out.println(RR.format());
+                    System.out.println("Sending RR: " + RR.format());
+
+                } catch(InvalidFrameException e) {
+                    System.out.println("Received invalid frame: " + frame);
+                    CharFrame REJ = new CharFrame('R', "", CRC_CCITT);
+                    REJ.setNum(0); //TODO
+                    out.println(REJ);
+
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
             }
 
             serverSocket.close();

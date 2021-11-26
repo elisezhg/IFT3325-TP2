@@ -26,9 +26,14 @@ public class CLI {
                     String name = params[1];
                     int port = Integer.parseInt((params[2]));
                     String filename = params[3];
+                    Boolean isGoBackN = params[4].equals("0");
 
-                    Sender sender = new Sender();
-                    sender.send(name, port, filename);
+                    if (isGoBackN) {
+                        Sender sender = new Sender();
+                        sender.send(name, port, filename);
+                    } else {
+                        System.out.println("Protocol not implemented.");
+                    }
 
                 //TODO: better error management
                 } catch (Exception e) {

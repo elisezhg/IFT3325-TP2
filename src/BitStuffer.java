@@ -41,4 +41,11 @@ public class BitStuffer {
 	}
 	return result.toString();
     }
+
+    //debug
+    public static void main(String[] args) {
+	String bitstring = "01000001000000010010111011011100";
+	System.out.println(BitStuffer.stuff(bitstring));
+	System.out.println(BitStuffer.destuff(bitstring));
+    }
 }
