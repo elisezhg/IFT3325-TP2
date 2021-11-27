@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TimerTask;
+import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +26,28 @@ public class Sender {
     public static final int MAXNUM = 7;
 
     public final int TIMEOUT_DELAY = 3;
+
+
+    private class PollTask extends TimerTask{
+	private PrintWriter out;
+	public PollTask(PrintWriter out){
+	    this.out = out;
+	}
+	public void run(){
+	    CharFrame poll = new CharFrame('P', "", CRC_CCITT);
+	    poll.setNum(0);
+
+	    synchronized (out) {
+		try{
+		    out.println(poll.format());
+		} catch (InvalidFrameException e) {
+		    System.out.println("An error occured building poll");
+		}
+	    }
+	    cancel();
+	}
+    }
+
 
     LinkedList<CharFrame> sentFrames;
     int nextFrameNum;
@@ -61,6 +84,9 @@ public class Sender {
                                        " at port " + portNumber);
                     out.println(stringFrame);
 
+		    //timout
+		    Timer timeout = new Timer();
+		    timeout.schedule(new PollTask(out), 3000);
                     receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
                     if (receptionFrame.getType() != 'A') {
                         System.out.println("Connection request rejected");
@@ -95,6 +121,10 @@ public class Sender {
                     sendFrame = ffr.getNextFrame();
                 }
                 //wait for ack or rej
+		//timout
+		Timer timeout = new Timer();
+		timeout.schedule(new PollTask(out), 3000);
+
                 receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
 		System.out.println("received ACK");
                 for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
@@ -124,6 +154,9 @@ public class Sender {
 	    }
 	    while (sentFrames.size() > 0) {
                 //wait for ack or rej
+		//timout
+		Timer timeout = new Timer();
+		timeout.schedule(new PollTask(out), 3000);
                 receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
 		System.out.println("received ACK");
                 for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {

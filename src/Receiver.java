@@ -58,13 +58,12 @@ public class Receiver {
 
                     isNextFrame = expectedFrameNum == receivedFrameNum;
 
-                    // TOD: TO BE REMOVED
-                    // for debugging purposes (skips frame 3)
-                    // if (receivedFrameNum == 3 && !skipped) {
-                    //     System.out.println("skipping no." + receivedFrameNum);
-                    //     skipped = true;
-                    //     continue;
-                    // }
+
+                    if (receivedFrameNum == 3 && !skipped) {
+                        System.out.println("skipping no." + receivedFrameNum);
+                        skipped = true;
+                        continue;
+                    }
 
                     // Check validity of the frame
 		    if (receivedFrame.isValid()) {
