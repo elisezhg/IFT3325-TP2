@@ -9,12 +9,12 @@ import java.net.Socket;
 
 public class Receiver {
     public static final String CRC_CCITT = "10001000000100001";
+    public static final int  WINDOW_SIZE = 7;
 
-    private int lastReceived;
+    private PrintWriter out;
+    private BufferedReader in;
 
-    public Receiver() {
-	lastReceived = 0;
-    }
+
     /**
      * Listen to the port number
      * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java
@@ -22,63 +22,102 @@ public class Receiver {
      */
     public void listen(int portNumber) {
         try {
-            ServerSocket serverSocket = new ServerSocket(portNumber);
-            Socket clientSocket = serverSocket.accept();
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            while (true) {
+                ServerSocket serverSocket = new ServerSocket(portNumber);
+                Socket clientSocket = serverSocket.accept();
+                this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+                this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));    
+                
+                // Init
+                Boolean connected = false;
+                int expectedFrameNum = 0;
+                
+                String receivedFrameString;
+                CharFrame receivedFrame;
+                char receivedFrameType;
+                int receivedFrameNum;
+                String receivedFrameData;
 
-            // for debugging purposes
-            // String str = in.readLine();
-            // System.out.println("echo " + str);
+                //TODO: to be removed
+                Boolean skipped = false;
 
-            String frame;
-	    CharFrame receivedFrame;
-	    CharFrame RR;
-	    // System.out.println("before unstuffing: " + frame);
+                // Proceed until sender demands to end
+                while (true) {
+                    
+                    // Read and construct received frame
+                    receivedFrameString = this.in.readLine();
+                    receivedFrame = new CharFrame(receivedFrameString, CRC_CCITT);
+                    
+                    // Get data from frame
+                    receivedFrameNum = receivedFrame.getNum();
+                    receivedFrameType = receivedFrame.getType();
+                    receivedFrameData = receivedFrame.getData();
 
-	    try {
-		receivedFrame = new CharFrame(in.readLine(), CRC_CCITT);
-		System.out.println("Received no " + receivedFrame.getNum()
-				   + " : " + receivedFrame.format());
+                    Boolean isNextFrame = expectedFrameNum == receivedFrameNum;
 
-		// Send confirmation
-		RR = new CharFrame('A', "", CRC_CCITT);
-		RR.setNum(receivedFrame.getNum() + 1);
-		out.println(RR.format());
-		System.out.println("Sending RR: " + RR.format());
+                    // TOD: TO BE REMOVED
+                    // for debugging purposes (skips frame 3)
+                    // if (receivedFrameNum == 3 && !skipped) {
+                    //     System.out.println("skipping no." + receivedFrameNum);
+                    //     skipped = true;
+                    //     continue;
+                    // }
 
-	    } catch(InvalidFrameException e) {
-		System.out.println("Received invalid frame");
-		CharFrame REJ = new CharFrame('R', "", CRC_CCITT);
-		REJ.setNum(0); //TODO
-		out.println(REJ);
+                    // Check validity of the frame
+                    if (receivedFrame.isValid() && isNextFrame) {
+                    
+                        // Establish connection if not done yet
+                        if (!connected && receivedFrameType == 'C') connected = true;
+                        
+                        if (connected) {
+                            System.out.println("Received no." + receivedFrameNum + ": "  + receivedFrameData);
+                            
+                            // Send reception receipt (RR)
+                            sendReceipt('A', expectedFrameNum);
+                            
+                            // Set last received number to current frame number
+                            expectedFrameNum =  (receivedFrameNum + 1) % WINDOW_SIZE;
 
-	    } catch (Exception e) {
-		System.out.println(e);
-	    }
+                            // If frame demands to end connection
+                            if (receivedFrameType == 'F') {
+                                connected = false;
+                                serverSocket.close();
+                                System.out.println("Ending connection.");
+                                break;
+                            }
+                        
+                        // Not connected
+                        } else {
+                            sendReceipt('R', expectedFrameNum);
+                        }
 
-	    //data exchange
+                    // Invalid frame
+                    } else {
+                        sendReceipt('R', expectedFrameNum);
+                    }
+                }
 
-	    while(true){
-		try{
-		    receivedFrame = new CharFrame(in.readLine(), CRC_CCITT);
-
-		    break;
-		}catch(InvalidFrameException e){
-		    System.out.println("Received invalid frame");
-		}
-	    }
-
-
-            serverSocket.close();
-
+            }
+        
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
-			       + portNumber + " or listening for a connection");
+               + portNumber + " or listening for a connection");
             System.out.println(e.getMessage());
-        }
 
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
-    private void sendReceipt(String type) {}
+    private void sendReceipt(char type, int num) throws InvalidFrameException {
+        CharFrame receipt = new CharFrame(type, "", CRC_CCITT);
+        receipt.setNum(num);
+        this.out.println(receipt.format());
+
+        if (type == 'A') {
+            System.out.println("Sending ACK for no." + num);
+        } else {
+            System.out.println("Sending REJ for no." + num);
+        }
+    }
 }
