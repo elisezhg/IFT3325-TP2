@@ -17,7 +17,7 @@ public class CLI {
                 System.out.println("Running tests...");
                 Test test = new Test();
                 test.runTests();
-    
+
             // Instantiate Sender
             } else if (params[0].equalsIgnoreCase("sender")) {
                 try {
@@ -39,7 +39,7 @@ public class CLI {
                 } catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
-    
+
             // Instantiate Receiver
             } else if (params[0].equalsIgnoreCase("receiver")) {
                 try {
