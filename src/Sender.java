@@ -22,7 +22,6 @@ public class Sender {
 
     public static final String CRC_CCITT = "10001000000100001";
     public static final int  WINDOW_SIZE = 7;
-    public static final int maxNum = 7;
     
     public final int TIMEOUT_DELAY = 3;
 
@@ -40,8 +39,8 @@ public class Sender {
     //  * @param filename name of the file to be read
     //  */
 
-    /*
-    public void send0(String hostName, int portNumber, String filename) throws UnknownHostException, IOException {
+
+    public void send(String hostName, int portNumber, String filename) throws UnknownHostException, IOException {
         //TODO: divide into multiple functions : (e.g. openConnection, sendData, sendFrame, awaitRR, etc.)
         //maybe socket and readers and writers should be fields initialised in the constructor
         try{
@@ -51,7 +50,9 @@ public class Sender {
 
             //open connection
             CharFrame receptionFrame = new CharFrame('C', "", CRC_CCITT);
-            receptionFrame.setNum(0);
+            receptionFrame.setNum(nextFrameNum);
+            nextFrameNum = (nextFrameNum + 1) % WINDOW_SIZE;
+
             String stringFrame = receptionFrame.format();//stringFrame is used to avoid computing when printing frame
             //wait for confirmation
             while(true){
@@ -79,10 +80,12 @@ public class Sender {
             FrameFileReader ffr = new FrameFileReader(filename, CRC_CCITT);
 
             CharFrame sendFrame = ffr.getNextFrame();
+        
             while (sendFrame != null) {
                 //send frames until window is full
+                while(sentFrames.size() < WINDOW_SIZE && sendFrame != null){//set frame num
                     sendFrame.setNum(nextFrameNum);
-                    nextFrameNum = (nextFrameNum + 1) % maxNum;
+                    nextFrameNum = (nextFrameNum + 1) % WINDOW_SIZE;
                     //write a frame and add it to the sentFrames list
                     stringFrame = sendFrame.format();
                     out.println(stringFrame);
@@ -98,14 +101,16 @@ public class Sender {
                     //if current frame is concerned by ack
                     if((f.getNum() > nextFrameNum
                         && receptionFrame.getNum() < nextFrameNum)
-                       || (f.getNum() < receptionFrame.getNum()
-                           && receptionFrame.getNum() < nextFrameNum)){
+                        || (f.getNum() < receptionFrame.getNum()
+                        && receptionFrame.getNum() < nextFrameNum)){
 
                         it.remove();
                         System.out.println("no " + f.getNum() + " acknowledged");
                     }
                     else {
                         if (receptionFrame.getType() == 'A') {
+                            // it.remove();
+                            // System.out.println("no " + f.getNum() + " acknowledged");
                             break;
                         }
                         //else type is 'R'
@@ -115,8 +120,8 @@ public class Sender {
                     }
                 }
 
-            }
-
+                }
+            
             //close connection
             sendFrame = new CharFrame('F', "", CRC_CCITT);
             sendFrame.setNum(nextFrameNum);
@@ -129,9 +134,9 @@ public class Sender {
             e.printStackTrace();
         }
     }
-    */
+    
 
-    public void send(String hostName, int portNumber, String filename) throws UnknownHostException, IOException {
+    public void send0(String hostName, int portNumber, String filename) throws UnknownHostException, IOException {
         try{
             Socket socket = new Socket(hostName, portNumber);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
