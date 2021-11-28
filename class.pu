@@ -1,70 +1,106 @@
-@startuml
+@startuml Diagramme de classe
 skinparam defaultFontName Courier 10 Pitch
-class CharFrame{
-	-flag: String
-	-type: String
-	-num: String
-	-data: String
-	-polynomial:String
 
-	/'the idea is for the constructor to immediately convert fields to
-	easier to work with bit strings'/
+class BitStuffer {
+    {static} +stuff(bitstring: String): String
+    {static} +destuff(bitstring: String): String
+}
+
+class CheckSumCalculator {
+    {static} +computeCRC(bitstring: String, polynomial: String): String
+    {static} -padLeft(str: String, pad: char, targetLength: int): String
+    {static} -xor(s1: String, s2: String): String
+    {static} -cyclicDivisionRest(bitstring: String, polynomial: String): String
+}
+
+class CharFrame {
+    {static} +TYPE_BITSIZE: int
+    {static} +NUM_BITSIZE: int
+    {static} +CRC_BITSIZE: int
+    {static} +FLAG_BITSIZE: String
+    -type: String
+    -num: String
+    -data: String
+    -crc: String
+    -polynomial: String
+
 	+CharFrame(flag:char, type:char, num:char, data:String, polynomial:String)
 	+CharFrame(frame:String)
-	+getFlag():String
-	+getType():char
-	+setType(type:char)
-	+getNum():int
-	+setNum(num:char)
-	+getData():String
-	+setData(data:String)
-	+computeCRC():String
-	+format():String
-}
-class CheckSumCalculator{
-	{static} +computeCRC(bitstring:String):String
-	{static} +validate(bitstring:String, crc:String):boolean
-}
-class BitStuffer{
-	{static} +stuff(bitstring:String):String
-	{static} +destuff(bitstring:String):String
-}
-class FrameFileReader{
-
-	+openFile(filename: String, flag:String):boolean
-	+closeFile()
-	+getNextFrame():CharFrame
-
-}
-class CLI{
-	+startREPL()
-}
-class Test{
-	+runTests()
+    +getType(): char
+    +setType(type: char)
+    +getNum(): int
+    +setNum(num: int)
+    +getData(): String
+    +setData(data: String)
+    +format(): String
+    +isValid(): boolean
+    {static} -padLeft(str: String, pad: char, targetLength: int): String
+    -computeCRC()
 }
 
-class Receiver{
-	-port:int
+class FrameFileReader {
+    -reader: BufferedReader
+    -polynomial: String
 
-	+listen(port:int)
-	-sendReceipt(type:String)
-}
-class Sender{
-	-sentFrames:String[7]/'needed to resend'/
-
-	+send(name:String, port:int, filename:String)
-	-sendFrame(name:String, port:int, frame:CharFrame)
+    +FrameFileReader(filename: String, polynomial: String)
+    +getNextFrame(): CharFrame
 }
 
-CLI --> Sender
-CLI --> Receiver
+Class Receiver {
+    {static} +CRC_CCITT: String
+    {static} +WINDOW_SIZE: int
+    {static} +MAX_NUM: int
+    
+    +listen(int: portNumber)
+    +close()
+    -sendReceipt(type: char, num: int)
+}
 
-FrameFileReader ..> CharFrame
-CharFrame --> CheckSumCalculator
-CharFrame --> BitStuffer
+Class Sender {
+    {static} +CRC_CCITT: String
+    {static} +WINDOW_SIZE: int
+    {static} +MAX_NUM: int
+    {static} +TIMEOUT_DELAY: int
+    -sentFrames: LinkedList<CharFrame>
+    -nextFrameNum: int
+
+    +send(hostName: String, portNumber: int, filename: String) 
+}
+
+class PollTask {
+    -out: PrintWriter
+    +PollTask(out: PrintWriter)
+    +run()
+}
+
+Class CLI {
+    {static} +main()
+}
+
+Class Test {
+    {static} +TEST_PORT: int
+    {static} +REC_PORT: int
+
+    +randError(s: String): String
+    +runTests()
+}
 
 CLI --> Test
+Test --> Receiver
+Test --> Sender
+
+CLI --> Receiver
+CLI --> Sender
+
+Receiver --> CharFrame
+Sender --> CharFrame
 Sender --> FrameFileReader
-Sender ..> CharFrame
-Receiver ..> CharFrame
+Sender --> PollTask
+
+FrameFileReader --> CharFrame
+PollTask --> CharFrame
+
+CharFrame --> BitStuffer
+CharFrame --> CheckSumCalculator
+
 @enduml
