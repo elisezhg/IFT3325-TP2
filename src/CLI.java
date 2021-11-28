@@ -47,15 +47,20 @@ public class CLI {
 
                     int port = Integer.parseInt((params[1]));
 
-                    Receiver receiver = new Receiver();
-                    receiver.listen(port);
+                    Receiver receiver = new Receiver(port);
+                    receiver.listen();
 
                 //TODO: better error management
                 } catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
 
-            } else {
+	    } else if (params[0].equalsIgnoreCase("test")) {
+
+		Test.runTests();
+
+	    }
+	    else {
                 System.out.println("Command not recognized.");
             }
 

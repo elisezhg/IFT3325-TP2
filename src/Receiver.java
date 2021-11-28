@@ -12,18 +12,31 @@ public class Receiver {
     public static final int  WINDOW_SIZE = 7;
     public static final int MAXNUM = 7;
 
+    private ServerSocket serverSocket;
     private PrintWriter out;
     private BufferedReader in;
 
+
+    public Receiver(int portNumber) throws IOException{
+        this.serverSocket = new ServerSocket(portNumber);
+    }
+
+    public void close() {
+	try{
+	    serverSocket.close();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
 
     /**
      * Listen to the port number
      * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java
      * @param portNumber
      */
-    public void listen(int portNumber) {
+    public void listen() {
         try {
-            ServerSocket serverSocket = new ServerSocket(portNumber);
+
             while (true) {
 
                 Socket clientSocket = serverSocket.accept();
@@ -95,7 +108,7 @@ public class Receiver {
                                     System.out.println("Ending connection.");
                                     break;
                                 }
-                                
+
                                 // Set last received number to current frame number
                                 expectedFrameNum = (receivedFrameNum + 1) % (MAXNUM + 1);
 
@@ -120,12 +133,6 @@ public class Receiver {
                 }
                 expectedFrameNum = 0;
             }
-
-        } catch (IOException e) {
-            System.out.println("Exception caught when trying to listen on port "
-                               + portNumber + " or listening for a connection");
-            System.out.println(e.getMessage());
-
         } catch (Exception e) {
             System.out.println(e);
         }
