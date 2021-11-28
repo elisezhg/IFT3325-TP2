@@ -61,10 +61,15 @@ public class Receiver {
 
 
                     if (receivedFrameNum == 3 && !skipped) {
-                        System.out.println("skipping no." + receivedFrameNum);
-                        Thread.sleep(4000);
+                        // Simulate lost frame
+                        // System.out.println("skipping no." + receivedFrameNum);
+                        // Thread.sleep(4000);
+                        // skipped = true;
+                        // continue;
+
+                        // Simulate data corruption
+                        receivedFrame.setType('O');
                         skipped = true;
-                        continue;
                     }
 
                     // Check validity of the frame

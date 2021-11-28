@@ -15,6 +15,7 @@ public class CheckSumCalculator {
 
 	return result.toString();
     }
+
     private static String cyclicDivisionRest(String bitstring, String polynomial){
 	StringBuilder rest = new StringBuilder(bitstring);
 	for(int i = 0; i <= rest.length() - polynomial.length(); i++){
@@ -41,6 +42,7 @@ public class CheckSumCalculator {
 	}
 	return result.toString();
     }
+
     //PUBLIC METHODS
     /**
      * @return 16-bit code that allows for error checking
@@ -54,11 +56,17 @@ public class CheckSumCalculator {
 
 	return padLeft(cyclicDivisionRest(dividend.toString(), polynomial), '0', 16);
     }
+
     /**
      * @return true if the polynomial divides bitstring mod 2
      */
     public static boolean validate(String bitstring, String polynomial) {
 	return Integer.parseInt(cyclicDivisionRest(bitstring, polynomial), 2) == 0;
+    }
+
+    public static void main(String[] args) {
+	String crc = CheckSumCalculator.computeCRC("1000000000000000", Sender.CRC_CCITT);
+	System.err.println(crc);
     }
 
 }
