@@ -133,16 +133,21 @@ public class Sender {
 
                 receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
                 pollTask.cancel();
-                System.out.println("received " + receptionFrame.getType());
+                System.out.println("received " + receptionFrame.getType() + " " + receptionFrame.getNum());
                 for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
                     CharFrame f = it.next();
                     //if current frame is concerned by ack
                     // System.out.println("i is " + f.getNum());
                     // System.out.println("n is " + nextFrameNum);
                     // System.out.println("A is " + receptionFrame.getNum());
-                    if((f.getNum() < receptionFrame.getNum())
-                       || (receptionFrame.getNum() <= nextFrameNum
-                           && f.getNum() > nextFrameNum)){
+                    
+                    // (R <= n && (i < R || i > n)) ||(R>n &&(i>n && i < R)
+
+                    // 0 1 2 3 4 5 6] 7
+                    // 0 1] 2 [3 4 5 6 7
+                    
+                    if((receptionFrame.getNum() <= nextFrameNum && (f.getNum() < receptionFrame.getNum() || f.getNum() > nextFrameNum))
+                    ||(receptionFrame.getNum()> nextFrameNum &&(f.getNum()>nextFrameNum && f.getNum() < receptionFrame.getNum()))){
 
                         it.remove();
                         System.out.println("no " + f.getNum() + " acknowledged");
@@ -169,7 +174,8 @@ public class Sender {
                 receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
                 pollTask.cancel();
 
-                System.out.println("received " + receptionFrame.getType());
+                System.out.println("received " + receptionFrame.getType() + " " + receptionFrame.getNum());
+
                 for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
                     CharFrame f = it.next();
                     //if current frame is concerned by ack

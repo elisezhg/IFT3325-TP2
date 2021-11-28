@@ -62,7 +62,7 @@ public class Receiver {
 
                     if (receivedFrameNum == 3 && !skipped) {
                         System.out.println("skipping no." + receivedFrameNum);
-                        // Thread.sleep(4000);
+                        Thread.sleep(4000);
                         skipped = true;
                         continue;
                     }
@@ -70,6 +70,7 @@ public class Receiver {
                     // Check validity of the frame
                     if (receivedFrame.isValid()) {
                         if (receivedFrame.getType() == 'P') {
+                            sendReceipt('A', expectedFrameNum);
                             System.out.println("received poll");
                         }
 
@@ -104,7 +105,7 @@ public class Receiver {
                             // Invalid frame
                         } else {
                             System.out.println("Invalid frame: received no." + receivedFrameNum);
-                            
+
                             if (!isWaitingForResend) {
                                 sendReceipt('R', expectedFrameNum);
                                 isWaitingForResend = true;
