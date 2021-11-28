@@ -23,7 +23,7 @@ public class Receiver {
      */
     public void listen(int portNumber) {
         try {
-	    ServerSocket serverSocket = new ServerSocket(portNumber);
+            ServerSocket serverSocket = new ServerSocket(portNumber);
             while (true) {
 
                 Socket clientSocket = serverSocket.accept();
@@ -39,7 +39,8 @@ public class Receiver {
                 char receivedFrameType;
                 int receivedFrameNum;
                 String receivedFrameData;
-		Boolean isNextFrame;
+                Boolean isNextFrame;
+                Boolean isWaitingForResend = false;
 
                 //TODO: to be removed
                 Boolean skipped = false;
@@ -61,51 +62,62 @@ public class Receiver {
 
                     if (receivedFrameNum == 3 && !skipped) {
                         System.out.println("skipping no." + receivedFrameNum);
+                        // Thread.sleep(4000);
                         skipped = true;
                         continue;
                     }
 
                     // Check validity of the frame
-		    if (receivedFrame.isValid()) {
-			if(isNextFrame) {
+                    if (receivedFrame.isValid()) {
+                        if (receivedFrame.getType() == 'P') {
+                            System.out.println("received poll");
+                        }
 
-			    // Establish connection if not done yet
-			    if (!connected && receivedFrameType == 'C') connected = true;
+                        if(isNextFrame) {
 
-			    if (connected) {
-				System.out.println("Received no." + receivedFrameNum + ": "  + receivedFrameData);
+                            // Establish connection if not done yet
+                            if (!connected && receivedFrameType == 'C') connected = true;
 
-				// Set last received number to current frame number
-				expectedFrameNum = (receivedFrameNum + 1) % (MAXNUM + 1);
+                            if (connected) {
+                                System.out.println("Received no." + receivedFrameNum + ": "  + receivedFrameData);
+                                isWaitingForResend = false;
 
-				// Send reception receipt (RR)
-				sendReceipt('A', expectedFrameNum);
+                                // If frame demands to end connection
+                                if (receivedFrameType == 'F') {
+                                    connected = false;
+                                    serverSocket.close();
+                                    System.out.println("Ending connection.");
+                                    break;
+                                }
+                                
+                                // Set last received number to current frame number
+                                expectedFrameNum = (receivedFrameNum + 1) % (MAXNUM + 1);
 
-				// If frame demands to end connection
-				if (receivedFrameType == 'F') {
-				    connected = false;
-				    serverSocket.close();
-				    System.out.println("Ending connection.");
-				    break;
-				}
+                                // Send reception receipt (RR)
+                                sendReceipt('A', expectedFrameNum);
 
-				// Not connected
-			    } else {
-				sendReceipt('R', expectedFrameNum);
-			    }
+                                // Not connected
+                            } else {
+                                sendReceipt('R', expectedFrameNum);
+                            }
 
-			    // Invalid frame
-			} else {
-			    sendReceipt('R', expectedFrameNum);
-			}
-		    }
-		}
-		expectedFrameNum = 0;
+                            // Invalid frame
+                        } else {
+                            System.out.println("Invalid frame: received no." + receivedFrameNum);
+                            
+                            if (!isWaitingForResend) {
+                                sendReceipt('R', expectedFrameNum);
+                                isWaitingForResend = true;
+                            }
+                        }
+                    }
+                }
+                expectedFrameNum = 0;
             }
 
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
-			       + portNumber + " or listening for a connection");
+                               + portNumber + " or listening for a connection");
             System.out.println(e.getMessage());
 
         } catch (Exception e) {
@@ -119,7 +131,7 @@ public class Receiver {
         this.out.println(receipt.format());
 
         if (type == 'A') {
-            System.out.println("Sending ACK for no." + num);
+            System.out.println("Sending RR for no." + num);
         } else {
             System.out.println("Sending REJ for no." + num);
         }
