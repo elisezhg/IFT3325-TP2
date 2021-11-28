@@ -11,6 +11,7 @@ public class CharFrame {
     private String type;
     private String num;
     private String data;
+    private String crc;
     private String polynomial;
 
     //PRIVATE METHODS
@@ -24,22 +25,28 @@ public class CharFrame {
         }
         return result.toString();
     }
+
+    /**
+     * computes checksum for the frame
+     */
+    private void computeCRC() {
+        this.crc = CheckSumCalculator.computeCRC(type + num + data, polynomial);
+    }
+
     //PUBLIC METHODS
     /**
      * @param type type of the frame (e.g. 'R' for REJ)
      * @param data content as string of characters
      * @param polynomial polynomial to be used for checksum in bitstring
      */
-    public CharFrame( char type, String data, String polynomial) {
-        this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
-        StringBuilder dataBits = new StringBuilder();
-        for(int i = 0; i < data.length(); i++)
-            dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
-        this.data = dataBits.toString();
-        this.polynomial = polynomial;
+    public CharFrame(char type, String data, String polynomial) {
+        setType(type);
+        setData(data);
+        setPolynomial(polynomial);
 
         this.num = null;
     }
+
     /**
      * @param frame formated frame (bitstring)
      * @param polynomial polynomial to be used for checksum
@@ -50,19 +57,14 @@ public class CharFrame {
             //if flag is not found at start and end of frame
             throw new InvalidFrameException();
         }
+
         String content = BitStuffer.destuff(frame.substring(FLAG.length(), frame.length() - FLAG.length()));
 
-        // Moved into isValid()
-        // if(!CheckSumCalculator.validate(content, polynomial)){
-        //     //if checksum is invalid
-        //     throw new InvalidFrameException();
-        // }
-        
         this.type = content.substring(0, TYPE_BITSIZE);
         this.num = content.substring(TYPE_BITSIZE, TYPE_BITSIZE + NUM_BITSIZE);
         this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
+        this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
         this.polynomial = polynomial;
-
     }
 
     public char getType(){
@@ -83,6 +85,9 @@ public class CharFrame {
             throw new IllegalArgumentException("arg int num is not small enough to be represented over " + NUM_BITSIZE + " bits");
         }
         this.num = padLeft(numstr, '0', NUM_BITSIZE);
+
+        // Set CRC
+        computeCRC();
     }
 
     public String getData(){
@@ -113,13 +118,7 @@ public class CharFrame {
     public void setPolynomial(String polynomial) {
         this.polynomial = polynomial;
     }
-    /**
-     * computes checksum for the frame
-     * @return checksum
-     */
-    public String computeCRC() {
-        return CheckSumCalculator.computeCRC(type + num + data, polynomial);
-    }
+
     /**
      * computes checksum and adds bitstuffing
      * @return this CharFrame as a string ready to be sent
@@ -127,14 +126,12 @@ public class CharFrame {
     public String format() throws InvalidFrameException{
         if(num == null)
             throw new InvalidFrameException();
-        return FLAG + BitStuffer.stuff(type + num + data + computeCRC()) + FLAG;
+        return FLAG + BitStuffer.stuff(type + num + data + crc) + FLAG;
     }
 
-    //TODO: debug
     public boolean isValid() {
-        // String crc = CheckSumCalculator.computeCRC(type + num + data, polynomial);
-        // return CheckSumCalculator.validate(crc, polynomial);
-        return true;
+        String crc = CheckSumCalculator.computeCRC(type + num + data, polynomial);
+        return crc.equals(this.crc);
     }
 
     //debug
