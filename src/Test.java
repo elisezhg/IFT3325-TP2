@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Random;
 
 
@@ -41,16 +40,13 @@ public class Test {
 	    receiverThread.start();
 
 	    //start sender
-	    Sender sender = new Sender();
+	    Sender sender = new Sender("localhost", TEST_PORT);
 	    //TODO: make runTests() create its own test file and delete it afterward
 	    String filename = "test/foo.txt";
 	    Thread senderThread = new Thread(new Runnable(){
 		    public void run(){
 			try{
-			    sender.send("localhost", TEST_PORT, filename);
-			}catch(UnknownHostException e){
-			    System.out.println("UnknownHostException. Stopping tests.");
-			    return;
+			    sender.send(filename);
 			} catch (IOException e) {
 			    System.out.println("IOException. Stopping Tests.");
 			    return;

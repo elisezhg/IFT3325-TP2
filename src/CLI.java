@@ -12,16 +12,9 @@ public class CLI {
 
         while (line != null) {
             String[] params = line.split(" ");
-            int lenParams = params.length;
-
-            // Run tests
-            if (lenParams == 0) {
-                System.out.println("Running tests...");
-                Test test = new Test();
-                test.runTests();
-
-            // Instantiate Sender
-            } else if (params[0].equalsIgnoreCase("sender")) {
+	    if(params.length <= 0)
+		continue;
+	    if (params[0].equalsIgnoreCase("sender")) {
                 try {
                     System.out.println("sending...");
 
