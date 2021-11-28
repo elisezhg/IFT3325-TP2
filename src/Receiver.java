@@ -12,21 +12,25 @@ public class Receiver {
     public static final int  WINDOW_SIZE = 7;
     public static final int MAXNUM = 7;
 
+    private boolean closed;
+
     private ServerSocket serverSocket;
     private PrintWriter out;
     private BufferedReader in;
-    Socket clientSocket;
+    private Socket clientSocket;
 
     public Receiver(int portNumber) throws IOException{
+	closed = false;
         this.serverSocket = new ServerSocket(portNumber);
     }
 
     public void close() {
 	try{
+	    closed = true;
 	    serverSocket.close();
 	    clientSocket.close();
 	} catch (IOException e) {
-	    System.out.println("error closing Receiver side sockets");
+	    System.out.println("IOException closing Receiver side sockets");
 	    e.printStackTrace();
 	}
     }
@@ -56,7 +60,7 @@ public class Receiver {
 	    Boolean isWaitingForResend = false;
 
 	    // loop until close is called
-	    while (true) {
+	    while (!closed) {
 
 		// Read and construct received frame
 		receivedFrameString = this.in.readLine();

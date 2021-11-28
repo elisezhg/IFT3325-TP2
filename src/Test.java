@@ -34,7 +34,6 @@ public class Test {
 	    Thread receiverThread = new Thread(new Runnable(){
 		    public void run() {
 			receiver.listen();
-			receiver.close();
 		    }
 		});
 	    receiverThread.start();
@@ -81,10 +80,6 @@ public class Test {
 				    //TODO:tests
 				    recOut.println(m);
 				}
-				senderSocket.close();
-				receiverSocket.close();
-				return;
-
 			    }catch(IOException e){
 				System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
 				return;
@@ -93,6 +88,7 @@ public class Test {
 		    }
 		});
 	    sToR.start();
+
 	    //start a thread to mess with receiver -> sender transmissions
 	    Thread rToS = new Thread(new Runnable() {
 		    public void run() {
@@ -103,9 +99,6 @@ public class Test {
 				    //TODO:tests
 				    senderOut.println(m);
 				}
-				senderSocket.close();
-				receiverSocket.close();
-				return;
 			    }catch(IOException e){
 				System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
 				return;
@@ -116,8 +109,18 @@ public class Test {
 		});
 	    rToS.start();
 
+	    sToR.join();
+	    rToS.join();
+
+	    receiver.close();
+	    sender.close();
+	    senderSocket.close();
+	    receiverSocket.close();
 	} catch (IOException e) {
 	    System.out.println("IOException. Stopping tests.");
+	} catch (InterruptedException e) {
+	    System.out.println("Thread error in tests. Stopping tests.");
+	    e.printStackTrace();
 	}
 
     }
