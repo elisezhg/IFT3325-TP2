@@ -15,7 +15,7 @@ public class Receiver {
     private ServerSocket serverSocket;
     private PrintWriter out;
     private BufferedReader in;
-
+    Socket clientSocket;
 
     public Receiver(int portNumber) throws IOException{
         this.serverSocket = new ServerSocket(portNumber);
@@ -24,7 +24,9 @@ public class Receiver {
     public void close() {
 	try{
 	    serverSocket.close();
+	    clientSocket.close();
 	} catch (IOException e) {
+	    System.out.println("error closing Receiver side sockets");
 	    e.printStackTrace();
 	}
     }
@@ -37,102 +39,84 @@ public class Receiver {
     public void listen() {
         try {
 
-            while (true) {
+	    clientSocket = serverSocket.accept();
+	    this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+	    this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                Socket clientSocket = serverSocket.accept();
-                this.out = new PrintWriter(clientSocket.getOutputStream(), true);
-                this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	    // Init
+	    Boolean connected = false;
+	    int expectedFrameNum = 0;
 
-                // Init
-                Boolean connected = false;
-                int expectedFrameNum = 0;
+	    String receivedFrameString;
+	    CharFrame receivedFrame;
+	    char receivedFrameType;
+	    int receivedFrameNum;
+	    String receivedFrameData;
+	    Boolean isNextFrame;
+	    Boolean isWaitingForResend = false;
 
-                String receivedFrameString;
-                CharFrame receivedFrame;
-                char receivedFrameType;
-                int receivedFrameNum;
-                String receivedFrameData;
-                Boolean isNextFrame;
-                Boolean isWaitingForResend = false;
+	    // loop until close is called
+	    while (true) {
 
-                //TODO: to be removed
-                Boolean skipped = false;
+		// Read and construct received frame
+		receivedFrameString = this.in.readLine();
+		receivedFrame = new CharFrame(receivedFrameString, CRC_CCITT);
 
-                // Proceed until sender demands to end
-                while (true) {
+		// Get data from frame
+		receivedFrameNum = receivedFrame.getNum();
+		receivedFrameType = receivedFrame.getType();
+		receivedFrameData = receivedFrame.getData();
 
-                    // Read and construct received frame
-                    receivedFrameString = this.in.readLine();
-                    receivedFrame = new CharFrame(receivedFrameString, CRC_CCITT);
+		isNextFrame = expectedFrameNum == receivedFrameNum;
 
-                    // Get data from frame
-                    receivedFrameNum = receivedFrame.getNum();
-                    receivedFrameType = receivedFrame.getType();
-                    receivedFrameData = receivedFrame.getData();
+		// Check validity of the frame
+		if (receivedFrame.isValid()) {
+		    if (receivedFrame.getType() == 'P') {
+			sendReceipt('A', expectedFrameNum);
+			System.out.println("received poll");
+		    }
 
-                    isNextFrame = expectedFrameNum == receivedFrameNum;
+		    if(isNextFrame) {
 
+			// Establish connection if not done yet
+			if (!connected && receivedFrameType == 'C') connected = true;
 
-                    if (receivedFrameNum == 3 && !skipped) {
-                        // Simulate lost frame
-                        // System.out.println("skipping no." + receivedFrameNum);
-                        // Thread.sleep(4000);
-                        // skipped = true;
-                        // continue;
+			if (connected) {
+			    System.out.println("Received no." + receivedFrameNum + ": "  + receivedFrameData);
+			    isWaitingForResend = false;
 
-                        // Simulate data corruption
-                        receivedFrame.setType('O');
-                        skipped = true;
-                    }
+			    // If frame demands to end connection
+			    if (receivedFrameType == 'F') {
+				connected = false;
+				System.out.println("Ending connection.");
+				break;
+			    }
 
-                    // Check validity of the frame
-                    if (receivedFrame.isValid()) {
-                        if (receivedFrame.getType() == 'P') {
-                            sendReceipt('A', expectedFrameNum);
-                            System.out.println("received poll");
-                        }
+			    // Set last received number to current frame number
+			    expectedFrameNum = (receivedFrameNum + 1) % (MAXNUM + 1);
 
-                        if(isNextFrame) {
+			    // Send reception receipt (RR)
+			    sendReceipt('A', expectedFrameNum);
 
-                            // Establish connection if not done yet
-                            if (!connected && receivedFrameType == 'C') connected = true;
+			    // Not connected
+			} else {
+			    sendReceipt('R', expectedFrameNum);
+			}
 
-                            if (connected) {
-                                System.out.println("Received no." + receivedFrameNum + ": "  + receivedFrameData);
-                                isWaitingForResend = false;
+			// Invalid frame
+		    } else {
+			//TODO: this message should not know the frame num since frame is invalid and num may have errors
+			System.out.println("Invalid frame: received no." + receivedFrameNum + "\nexpected: " + expectedFrameNum);
 
-                                // If frame demands to end connection
-                                if (receivedFrameType == 'F') {
-                                    connected = false;
-                                    serverSocket.close();
-                                    System.out.println("Ending connection.");
-                                    break;
-                                }
+			if (!isWaitingForResend) {
+			    sendReceipt('R', expectedFrameNum);
+			    isWaitingForResend = true;
+			}
+		    }
+		}
+	    }
+	    expectedFrameNum = 0;
 
-                                // Set last received number to current frame number
-                                expectedFrameNum = (receivedFrameNum + 1) % (MAXNUM + 1);
-
-                                // Send reception receipt (RR)
-                                sendReceipt('A', expectedFrameNum);
-
-                                // Not connected
-                            } else {
-                                sendReceipt('R', expectedFrameNum);
-                            }
-
-                            // Invalid frame
-                        } else {
-                            System.out.println("Invalid frame: received no." + receivedFrameNum);
-
-                            if (!isWaitingForResend) {
-                                sendReceipt('R', expectedFrameNum);
-                                isWaitingForResend = true;
-                            }
-                        }
-                    }
-                }
-                expectedFrameNum = 0;
-            }
         } catch (Exception e) {
             System.out.println(e);
         }

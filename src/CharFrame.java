@@ -65,6 +65,9 @@ public class CharFrame {
         this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
         this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
         this.polynomial = polynomial;
+
+	if(!this.isValid())
+	    throw new InvalidFrameException();
     }
 
     public char getType(){
@@ -76,6 +79,8 @@ public class CharFrame {
     }
 
     public int getNum(){
+	if(num == null)
+	    throw new IllegalStateException();
         return Integer.parseInt(num, 2);
     }
 
