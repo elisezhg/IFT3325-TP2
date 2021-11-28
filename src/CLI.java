@@ -55,7 +55,12 @@ public class CLI {
                     System.out.println("Please check the arguments.");
                 }
 
-            } else {
+	    } else if (params[0].equalsIgnoreCase("test")) {
+
+		Test.runTests();
+
+	    }
+	    else {
                 System.out.println("Command not recognized.");
             }
 

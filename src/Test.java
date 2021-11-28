@@ -16,94 +16,31 @@ public class Test {
     public static void runTests() {
 	System.out.println("Running Tests :");
 
-	    /*TESTS:
-	     *
-	     *-Frame with errors from Sender
-	     *-Frame with errors from Receiver
-	     *-Frame lost from Sender
-	     *-Frame lost from Receiver
-	     *-send enough frames to make the window go all the way around
-	     *
-	     */
+	/*TESTS:
+	 *
+	 *-Frame with errors from Sender
+	 *-Frame with errors from Receiver
+	 *-Frame lost from Sender
+	 *-Frame lost from Receiver
+	 *-send enough frames to make the window go all the way around
+	 *
+	 */
 
+	try{
+	    //open serverSockets
+	    ServerSocket serverSocket = new ServerSocket(TEST_PORT);
+	    Receiver receiver = new Receiver(REC_PORT);
 
-	    Receiver receiver = new Receiver();
+	    //start receiver
 	    Thread receiverThread = new Thread(new Runnable(){
 		    public void run() {
-			receiver.listen(REC_PORT);
+			receiver.listen();
+			receiver.close();
 		    }
 		});
 	    receiverThread.start();
 
-	    Thread testThread = new Thread(new Runnable() {
-		    public void run(){
-			try{
-			    //let sender's socket connect
-			    ServerSocket serverSocket = new ServerSocket(TEST_PORT);
-			    Socket senderSocket = serverSocket.accept();
-			    serverSocket.close();
-			    PrintWriter senderOut =
-				new PrintWriter(senderSocket.getOutputStream(), true);
-			    BufferedReader senderIn = new BufferedReader
-				(new InputStreamReader(senderSocket.getInputStream()));
-
-			    //connect to receiver's socket
-			    Socket receiverSocket = new Socket("localhost", REC_PORT);
-			    PrintWriter recOut =
-				new PrintWriter(receiverSocket.getOutputStream(), true);
-			    BufferedReader recIn = new BufferedReader
-				(new InputStreamReader(receiverSocket.getInputStream()));
-
-			    //start a thread to mess with sender -> receiver transmissions
-			    Thread sToR = new Thread(new Runnable() {
-				    public void run(){
-					String m;
-					while (true) {
-					    try{
-						while ((m = senderIn.readLine()) != null) {
-							//TODO:tests
-							recOut.println(m);
-						}
-						senderSocket.close();
-						receiverSocket.close();
-						return;
-
-					    }catch(IOException e){
-						System.out.println("IOException in Sender to Receiver transmission");
-					    }
-					}
-				    }
-				});
-			    sToR.start();
-			    //start a thread to mess with receiver -> sender transmissions
-			    Thread rToS = new Thread(new Runnable() {
-				    public void run() {
-					String m;
-					while (true) {
-					    try{
-						while ((m = recIn.readLine()) != null) {
-							//TODO:tests
-							senderOut.println(m);
-						}
-						senderSocket.close();
-						receiverSocket.close();
-						return;
-					    }catch(IOException e){
-						System.out.println("IOException in Sender to Receiver transmission");
-					    }
-					}
-				    }
-
-				});
-			    rToS.start();
-
-			} catch (IOException e) {
-			    System.out.println("IOException. Stopping tests.");
-			}
-		    }
-		});
-	    testThread.start();
-
+	    //start sender
 	    Sender sender = new Sender();
 	    //TODO: make runTests() create its own test file and delete it afterward
 	    String filename = "test/foo.txt";
@@ -120,7 +57,72 @@ public class Test {
 			}
 		    }
 		});
+
 	    senderThread.start();
+
+	    //let sender's socket connect
+	    Socket senderSocket = serverSocket.accept();
+	    serverSocket.close();
+	    PrintWriter senderOut =
+		new PrintWriter(senderSocket.getOutputStream(), true);
+	    BufferedReader senderIn = new BufferedReader
+		(new InputStreamReader(senderSocket.getInputStream()));
+
+	    //connect to receiver's socket
+	    Socket receiverSocket = new Socket("localhost", REC_PORT);
+	    PrintWriter recOut =
+		new PrintWriter(receiverSocket.getOutputStream(), true);
+	    BufferedReader recIn = new BufferedReader
+		(new InputStreamReader(receiverSocket.getInputStream()));
+
+	    //start a thread to mess with sender -> receiver transmissions
+	    Thread sToR = new Thread(new Runnable() {
+		    public void run(){
+			String m;
+			while (true) {
+			    try{
+				while ((m = senderIn.readLine()) != null) {
+				    //TODO:tests
+				    recOut.println(m);
+				}
+				senderSocket.close();
+				receiverSocket.close();
+				return;
+
+			    }catch(IOException e){
+				System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
+				return;
+			    }
+			}
+		    }
+		});
+	    sToR.start();
+	    //start a thread to mess with receiver -> sender transmissions
+	    Thread rToS = new Thread(new Runnable() {
+		    public void run() {
+			String m;
+			while (true) {
+			    try{
+				while ((m = recIn.readLine()) != null) {
+				    //TODO:tests
+				    senderOut.println(m);
+				}
+				senderSocket.close();
+				receiverSocket.close();
+				return;
+			    }catch(IOException e){
+				System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
+				return;
+			    }
+			}
+		    }
+
+		});
+	    rToS.start();
+
+	} catch (IOException e) {
+	    System.out.println("IOException. Stopping tests.");
+	}
 
     }
 

@@ -21,6 +21,14 @@ public class Receiver {
         this.serverSocket = new ServerSocket(portNumber);
     }
 
+    public void close() {
+	try{
+	    serverSocket.close();
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+
     /**
      * Listen to the port number
      * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java
