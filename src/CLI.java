@@ -47,8 +47,8 @@ public class CLI {
 
                     int port = Integer.parseInt((params[1]));
 
-                    Receiver receiver = new Receiver();
-                    receiver.listen(port);
+                    Receiver receiver = new Receiver(port);
+                    receiver.listen();
 
                 //TODO: better error management
                 } catch (Exception e) {
