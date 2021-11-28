@@ -66,6 +66,9 @@ public class CharFrame {
         this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
         this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
         this.polynomial = polynomial;
+
+	if(!this.isValid())
+	    throw new InvalidFrameException();
     }
 
     public char getType() {
@@ -76,7 +79,9 @@ public class CharFrame {
         this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
     }
 
-    public int getNum() {
+    public int getNum(){
+	if(num == null)
+	    throw new IllegalStateException();
         return Integer.parseInt(num, 2);
     }
 
@@ -115,7 +120,7 @@ public class CharFrame {
 
     /**
      * computes checksum and adds bitstuffing
-     * 
+     *
      * @return this CharFrame as a string ready to be sent
      */
     public String format() throws InvalidFrameException {

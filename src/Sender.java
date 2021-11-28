@@ -1,6 +1,7 @@
 package src;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -17,7 +18,7 @@ public class Sender {
     public static final int  WINDOW_SIZE = 7;
     public static final int MAXNUM = 7;
 
-    public final int TIMEOUT_DELAY = 3;
+    public final int TIMEOUT_DELAY = 3000;
 
 
     private class PollTask extends TimerTask{
@@ -33,11 +34,11 @@ public class Sender {
                 try{
                     System.out.println("Sending poll");
                     out.println(poll.format());
+
                 } catch (InvalidFrameException e) {
                     System.out.println("An error occured building poll");
                 }
             }
-            // cancel();
         }
     }
 
@@ -45,164 +46,172 @@ public class Sender {
     LinkedList<CharFrame> sentFrames;
     int nextFrameNum;
 
-    public Sender() {
-        sentFrames = new LinkedList<>();
-        nextFrameNum = 0;
+
+    String hostName;
+    int portNumber;
+
+    Socket socket;
+    PrintWriter out;
+    BufferedReader in;
+
+    /**
+     * @param hostName host name
+     * @param portNumber port number
+     */
+    public Sender(String hostName, int portNumber) throws UnknownHostException, IOException{
+	sentFrames = new LinkedList<>();
+	nextFrameNum = 0;
+
+	this.hostName = hostName;
+	this.portNumber = portNumber;
+
+	socket = new Socket(hostName, portNumber);
+	out = new PrintWriter(socket.getOutputStream(), true);
+	in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
     }
-    // /**
-    //  * Send the data from a file to another machine using a simplified HDLC protocol
-    //  * @param hostName host name
-    //  * @param portNumber port number
-    //  * @param filename name of the file to be read
-    //  */
 
+    private boolean connect() {
 
-    public void send(String hostName, int portNumber, String filename) throws UnknownHostException, IOException {
-        //TODO: divide into multiple functions : (e.g. openConnection, sendData, sendFrame, awaitRR, etc.)
-        //maybe socket and readers and writers should be fields initialised in the constructor
-        try{
-            Socket socket = new Socket(hostName, portNumber);
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	try{
+	    CharFrame receptionFrame = new CharFrame('C', "", CRC_CCITT);
+	    String stringFrame = receptionFrame.format();
+	    receptionFrame.setNum(nextFrameNum);
+	    System.out.println("Sending connection request to " + hostName +
+			       " at port " + portNumber);
+	    out.println(stringFrame);
 
-            //open connection
-            CharFrame receptionFrame = new CharFrame('C', "", CRC_CCITT);
-            receptionFrame.setNum(nextFrameNum);
-            nextFrameNum = (nextFrameNum + 1) % MAXNUM;
-            String stringFrame = receptionFrame.format();//stringFrame is used to avoid computing when printing frame
-            //wait for confirmation
-            while(true){
-                try{
-                    System.out.println("Sending connection request to " + hostName +
-                                       " at port " + portNumber);
-                    out.println(stringFrame);
+	    //set timout//TODO: give timer to poll too
+	    PollTask pollTask = new PollTask(out);
+	    Timer timeout = new Timer();
+	    timeout.schedule(pollTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
-                    //timout
-                    PollTask pollTask = new PollTask(out);
-                    Timer timeout = new Timer();
-                    timeout.schedule(pollTask, 3000);
+	    receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
+	    timeout.cancel();
 
-                    receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
-                    timeout.cancel();
+	    if (receptionFrame.getType() != 'A') {
+		System.out.println("Connection request rejected");
+		return false;
+	    }
+	}catch(InvalidFrameException e){
+	    System.out.println("error in Sender.connect()");
+	    e.printStackTrace();
+	    System.exit(1);
+	} catch (IOException e) {
+	    System.out.println("IOException in Sender.connect()");
+	    return false;
+	}
 
-                    if (receptionFrame.getType() != 'A') {
-                        System.out.println("Connection request rejected");
-                        return;
-                    }
-                    System.out.println("Connection established");
+	System.out.println("Connection established");
+	nextFrameNum = (nextFrameNum + 1) % MAXNUM;
+	return true;
+    }
 
-                    break;
-                } catch (InvalidFrameException e) {
-                    System.out.println("Received frame containing errors.");
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-            }
+    private void awaitRR() {
+	try{
+	    String stringFrame;
 
-            //send data
-            FrameFileReader ffr = new FrameFileReader(filename, CRC_CCITT);
+	    //set timout
+	    PollTask pollTask = new PollTask(out);
+	    Timer timeout = new Timer();
+	    timeout.schedule(pollTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
-            CharFrame sendFrame = ffr.getNextFrame();
+	    CharFrame receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
+	    pollTask.cancel();
 
-            while (sendFrame != null) {
-                //send frames until window is full
-                while (sentFrames.size() < WINDOW_SIZE && sendFrame != null) {//set frame num
-                    sendFrame.setNum(nextFrameNum);
-                    nextFrameNum = (nextFrameNum + 1) % (MAXNUM + 1);
-                    //write a frame and add it to the sentFrames list
-                    stringFrame = sendFrame.format();
-                    out.println(stringFrame);
-                    sentFrames.add(sendFrame);
-                    System.out.println("Sent no " + sendFrame.getNum() + " : " + sendFrame.getData());
+	    System.out.println("received " + receptionFrame.getType() + " " + receptionFrame.getNum());
 
-                    sendFrame = ffr.getNextFrame();
-                }
-                //wait for ack or rej
-                //timout
-                PollTask pollTask = new PollTask(out);
-                Timer timeout = new Timer();
-                timeout.schedule(pollTask, 3000);
+	    for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
+		CharFrame f = it.next();
+		//if current frame is concerned by ack
+		if((receptionFrame.getNum() <= nextFrameNum
+		    && (f.getNum() < receptionFrame.getNum() || f.getNum() > nextFrameNum))
+		   ||(receptionFrame.getNum()> nextFrameNum
+		      &&(f.getNum()>nextFrameNum && f.getNum() < receptionFrame.getNum()))){
 
-                receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
-                pollTask.cancel();
-                System.out.println("received " + receptionFrame.getType() + " " + receptionFrame.getNum());
-                for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
-                    CharFrame f = it.next();
-                    //if current frame is concerned by ack
-                    // System.out.println("i is " + f.getNum());
-                    // System.out.println("n is " + nextFrameNum);
-                    // System.out.println("A is " + receptionFrame.getNum());
-                    
-                    // (R <= n && (i < R || i > n)) ||(R>n &&(i>n && i < R)
+		    it.remove();
+		    System.out.println("no " + f.getNum() + " acknowledged");
+		}
+		else {
+		    if (receptionFrame.getType() == 'A') {
+			break;
+		    }
+		    //else type is 'R'
+		    stringFrame = f.format();
+		    out.println(stringFrame);
+		    System.out.println("Resent no " + f.getNum() +" : " + f.getData());
+		}
+	    }
+	} catch (InvalidFrameException e) {
+	    System.out.println("Sender received invalid frame");
+	} catch (IOException e) {
+	    System.out.println("IOException in Sender.awaitRR()");
+	}
+    }
+    /**
+     * Send the data from a file to another machine using a simplified HDLC protocol
+     * @param filename name of the file to be read
+     */
+    public void send(String filename) throws FileNotFoundException{
 
-                    // 0 1 2 3 4 5 6] 7
-                    // 0 1] 2 [3 4 5 6 7
-                    
-                    if((receptionFrame.getNum() <= nextFrameNum && (f.getNum() < receptionFrame.getNum() || f.getNum() > nextFrameNum))
-                    ||(receptionFrame.getNum()> nextFrameNum &&(f.getNum()>nextFrameNum && f.getNum() < receptionFrame.getNum()))){
+	try{
+	    //open connection
+	    //wait for confirmation
+	    while (!connect()) {}
 
-                        it.remove();
-                        System.out.println("no " + f.getNum() + " acknowledged");
-                    }
-                    else {
-                        if (receptionFrame.getType() == 'A') {
-                            break;
-                        }
-                        //else type is 'R'
-                        stringFrame = f.format();
-                        out.println(stringFrame);
-                        System.out.println("Resent no " + f.getNum() +" : " + f.getData());
-                    }
-                }
+	    //send data
+	    FrameFileReader ffr = new FrameFileReader(filename, CRC_CCITT);
 
-            }
-            while (sentFrames.size() > 0) {
-                //wait for ack or rej
-                //timout
-                PollTask pollTask = new PollTask(out);
-                Timer timeout = new Timer();
-                timeout.schedule(pollTask, 3000);
-                
-                receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
-                pollTask.cancel();
+	    CharFrame sendFrame = ffr.getNextFrame();
+	    String stringFrame;
 
-                System.out.println("received " + receptionFrame.getType() + " " + receptionFrame.getNum());
+	    while (sendFrame != null) {
+		//send frames until window is full
+		while (sentFrames.size() < WINDOW_SIZE && sendFrame != null) {
+		    //set frame num
+		    sendFrame.setNum(nextFrameNum);
+		    nextFrameNum = (nextFrameNum + 1) % (MAXNUM + 1);
 
-                for (Iterator<CharFrame> it = sentFrames.iterator(); it.hasNext();) {
-                    CharFrame f = it.next();
-                    //if current frame is concerned by ack
-                    // System.out.println("i is " + f.getNum());
-                    // System.out.println("n is " + nextFrameNum);
-                    // System.out.println("A is " + receptionFrame.getNum());
-                    if((f.getNum() < receptionFrame.getNum())
-                       || (receptionFrame.getNum() <= nextFrameNum
-                           && f.getNum() > nextFrameNum)){
+		    //write a frame and add it to the sentFrames list
+		    stringFrame = sendFrame.format();
+		    out.println(stringFrame);
+		    sentFrames.add(sendFrame);
 
-                        it.remove();
-                        System.out.println("no " + f.getNum() + " acknowledged");
-                    }
-                    else {
-                        if (receptionFrame.getType() == 'A') {
-                            break;
-                        }
-                        //else type is 'R'
-                        stringFrame = f.format();
-                        out.println(stringFrame);
-                        System.out.println("Resent no " + f.getNum() +" : " + f.getData());
-                    }
-                }
-            }
-            //close connection
-            sendFrame = new CharFrame('F', "", CRC_CCITT);
-            sendFrame.setNum(nextFrameNum);
-            System.out.println("sending closing request no."  +sendFrame.getNum());
-            out.println(sendFrame.format());
-            System.out.println("Closed connection");
+		    System.out.println("Sent no " + sendFrame.getNum() + " : " + sendFrame.getData());
 
-            socket.close();
+		    sendFrame = ffr.getNextFrame();
+		}
+		//wait for ack or rej
 
-        }catch(InvalidFrameException e){
-            e.printStackTrace();
-        }
+		awaitRR();
+
+	    }
+	    while (sentFrames.size() > 0) {
+		//wait for ack or rej
+		awaitRR();
+	    }
+	    //close connection
+	    sendFrame = new CharFrame('F', "", CRC_CCITT);
+	    sendFrame.setNum(nextFrameNum);
+	    System.out.println("sending closing request no."  +sendFrame.getNum());
+	    out.println(sendFrame.format());
+	    System.out.println("Closed connection");
+
+	}catch(FileNotFoundException e){
+	    throw e;
+	}catch (IOException e) {
+	    System.out.println("IOException in Sender.send()");
+	} catch(InvalidFrameException e){
+	    System.out.println("Trying to format invalid frame in Sender.send()");
+	}
+
+    }
+
+    public void close(){
+	try{
+	    socket.close();
+	} catch (IOException e) {
+	    System.out.println("IOException closing Sender socket");
+	}
     }
 }

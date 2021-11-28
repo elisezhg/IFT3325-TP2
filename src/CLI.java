@@ -1,5 +1,7 @@
 package src;
 
+import java.io.FileNotFoundException;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class CLI {
@@ -29,14 +31,19 @@ public class CLI {
                     Boolean isGoBackN = params[4].equals("0");
 
                     if (isGoBackN) {
-                        Sender sender = new Sender();
-                        sender.send(name, port, filename);
+                        Sender sender = new Sender(name, port);
+                        sender.send(filename);
                     } else {
                         System.out.println("Protocol not implemented.");
                     }
 
                 //TODO: better error management
-                } catch (Exception e) {
+		} catch (UnknownHostException e) {
+		    System.out.println("Unknown Host");
+		} catch (FileNotFoundException e) {
+		    System.out.println("File not found.");
+		}
+		catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
 
@@ -56,9 +63,7 @@ public class CLI {
                 }
 
 	    } else if (params[0].equalsIgnoreCase("test")) {
-
 		Test.runTests();
-
 	    }
 	    else {
                 System.out.println("Command not recognized.");
