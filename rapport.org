@@ -1,0 +1,66 @@
+#+TITLE:IFT3325 Téléinformatique : Devoir 2
+:EXPORT_OPTIONS:
+#+OPTIONS: toc:nil
+#+OPTIONS: author:nil
+#+OPTIONS: date:nil
+#+OPTIONS: timestamp:nil
+:END:
+* Diagramme de classes
+
+* Classes
+** BitStuffer
+*** _+stuff(bitstring:String):String_
+Prends en paramètre une chaine de '0' et '1' sous forme
+de String et retourne la même chaine où chaque suite de
+cinq '1' est maintenant suivie d'un '0'.
+***  _+destuff(bitstring:String):String_
+Effectue l'inverse de la fonction ~stuff(String)~ en retirant
+tous les '1' qui suivent cinq '0'
+de sorte que ~s==destuff(stuff(s))~.
+** CharFrame
+*** +CharFrame(type:char, data:String, polynomial:String)
+Construit une trame à partir d'un type, de données et d'un polynôme
+utilisé pour le contrôle d'erreur. Le numéro de la trame
+doit être ajouté via la méthode ~setNum(int)~.
+*** +CharFrame(frame:String, polynomial:String)
+Construit une trame à partir d'une string de bits telle que
+celle produite par la fonction ~format()~. Si la trame comprends des erreurs
+lance une ~InvalidFrameException~.
+*** _-padLeft(str:String, pad:char, targetlength:int):String_
+Ajoute le ~pad~ au début de ~str~ autant de fois qu'il faut pour qu'elle
+soit de taille au moins ~targetlength~.
+*** -computeCRC()
+Calcule le checksum pour la trame et le place dans le champ ~crc~.
+*** +getType():char
+Retourne le type de la trame.
+*** +setType(type:char)
+Assigne un type à la trame.
+*** +getNum():int
+Retourne le numéro de la trame.
+*** +setNum(num:int)
+Assigne un numéro qui doit être représentable sur
+~NUM_BITSIZE~ bits à la trame.
+*** +getData():String
+Retourne les données de la trame.
+*** +setData(String data)
+Assigne de nouvelles données à la trame.
+*** +format():String
+Retourne la trame sous forme de chaine de bits.
+*** +isValid():boolean
+retourne vrai si le champs crc est correct.
+** CheckSumCalculator
+*** _-xor(s1:String, s2:String):String_
+Retourne le XOR de deux chaines de bits.
+La chaine la plus courte est allongée
+de suffisamment de '0' pour que les deux
+chaines soient de tailles égales.
+*** _+cyclicDivisionRest(bitstring:String, polynomial:String):String_
+Retourne le reste de la division mod 2 du polynome ~bitstring~
+par le polynome ~polynomial~
+*** _-padLeft(str:String, pad:char, targetlength:int):String_
+Ajoute le ~pad~ au début de ~str~ autant de fois qu'il faut pour qu'elle
+soit de taille au moins ~targetlength~.
+*** _+computeCRC(bitstring:String, polynomial:String):String_
+Calcule et retourne le Cyclical Redundancy Code.
+** CLI
+*** _+main(args:String[])_
