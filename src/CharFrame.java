@@ -50,7 +50,7 @@ public class CharFrame {
     /**
      * @param frame      formated frame (bitstring)
      * @param polynomial polynomial to be used for checksum
-     * @throws BadTransmissionException if frame has invalid flags or checksum
+     * @throws InvalidFrameException if frame has invalid flags or checksum
      */
     public CharFrame(String frame, String polynomial) throws InvalidFrameException {
         if (!frame.substring(0, FLAG.length()).equals(FLAG)
@@ -77,6 +77,7 @@ public class CharFrame {
 
     public void setType(char type) {
         this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
+	computeCRC();
     }
 
     public int getNum(){
@@ -116,6 +117,7 @@ public class CharFrame {
         for (int i = 0; i < data.length(); i++)
             dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
         this.data = dataBits.toString();
+	computeCRC();
     }
 
     /**
@@ -123,9 +125,9 @@ public class CharFrame {
      *
      * @return this CharFrame as a string ready to be sent
      */
-    public String format() throws InvalidFrameException {
+    public String format(){
         if (num == null)
-            throw new InvalidFrameException();
+            throw new IllegalStateException();
         return FLAG + BitStuffer.stuff(type + num + data + crc) + FLAG;
     }
 
