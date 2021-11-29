@@ -80,16 +80,17 @@ public class Sender {
 	}
 
 	private void awaitRR() {
-		try {
-			String stringFrame;
+		String receivedFrameString;
 
+		try {
 			// Set timeout
 			PollTask pollTask = new PollTask(out, CRC_CCITT);
 			Timer timeout = new Timer();
 			timeout.schedule(pollTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
-			CharFrame receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
+			receivedFrameString = in.readLine();
 			pollTask.cancel();
+			CharFrame receptionFrame = new CharFrame(receivedFrameString, CRC_CCITT);
 
 			System.out.println("Received " + receptionFrame.getType() + " for no." + receptionFrame.getNum());
 
@@ -108,8 +109,7 @@ public class Sender {
 						break;
 					}
 					// else type is 'R'
-					stringFrame = f.format();
-					out.println(stringFrame);
+					out.println(f.format());
 					System.out.println("Resent no." + f.getNum() + ": \"" + f.getData() + "\"");
 				}
 			}
