@@ -109,8 +109,8 @@ public class Sender {
 						break;
 					}
 					// else type is 'R'
-					out.println(f.format());
 					System.out.println("Resent no." + f.getNum() + ": \"" + f.getData() + "\"");
+					out.println(f.format());
 				}
 			}
 		} catch (InvalidFrameException e) {
@@ -146,10 +146,9 @@ public class Sender {
 					nextFrameNum = (nextFrameNum + 1) % (MAX_NUM + 1);
 
 					// write a frame and add it to the sentFrames list
+					System.out.println("Sent no." + sendFrame.getNum() + ": \"" + sendFrame.getData() + "\"");
 					out.println(sendFrame.format());
 					sentFrames.add(sendFrame);
-
-					System.out.println("Sent no." + sendFrame.getNum() + ": \"" + sendFrame.getData() + "\"");
 
 					sendFrame = ffr.getNextFrame();
 				}
