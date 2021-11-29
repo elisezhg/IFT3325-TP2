@@ -17,13 +17,8 @@ public class PollTask extends TimerTask {
         poll.setNum(0);
 
         synchronized (out) {
-            try {
-                System.out.println("Sending poll");
-                out.println(poll.format());
-
-            } catch (InvalidFrameException e) {
-                System.out.println("An error occured building poll");
-            }
+            System.out.println("Sending poll");
+            out.println(poll.format());
         }
     }
 }

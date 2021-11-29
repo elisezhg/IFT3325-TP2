@@ -49,6 +49,8 @@ public class Receiver {
             this.out = new PrintWriter(clientSocket.getOutputStream(), true);
             this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+            FrameFileWriter ffw = new FrameFileWriter("./test/out.txt");
+
             // Init
             Boolean connected = false;
             int expectedFrameNum = 0;
@@ -94,8 +96,14 @@ public class Receiver {
 
                             isWaitingForResend = false;
 
-                            // If frame demands to end connection
-                            if (receivedFrameType == 'F') {
+                            // Write to file
+                            if (receivedFrameType == 'I') {
+                                // ffw.write(receivedFrame);
+                                ffw.write(receivedFrame);
+
+                                // If frame demands to end connection
+                            } else if (receivedFrameType == 'F') {
+                                ffw.close();
                                 close();
                                 System.out.println(PRINT_PADDING + "Ending connection.");
                                 break;
@@ -115,8 +123,8 @@ public class Receiver {
                         // Not the expected frame
                     } else {
                         System.out.println(
-                                PRINT_PADDING + "Invalid frame: received no." + receivedFrameNum +
-                                        "\nexpected no." + expectedFrameNum);
+                                PRINT_PADDING + "Invalid frame: received no." + receivedFrameNum);
+                        System.out.println(PRINT_PADDING + "\nexpected no." + expectedFrameNum);
 
                         if (!isWaitingForResend) {
                             sendReceipt('R', expectedFrameNum);
@@ -135,6 +143,11 @@ public class Receiver {
         }
     }
 
+    /**
+     * @param type
+     * @param num
+     * @throws InvalidFrameException
+     */
     private void sendReceipt(char type, int num) throws InvalidFrameException {
         if (type == 'A') {
             System.out.println(PRINT_PADDING + "Sending RR for no." + num);

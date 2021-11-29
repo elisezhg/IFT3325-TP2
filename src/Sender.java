@@ -172,8 +172,8 @@ public class Sender {
 			throw e;
 		} catch (IOException e) {
 			System.out.println("IOException in Sender.send()");
-		} catch (InvalidFrameException e) {
-			System.out.println("Trying to format invalid frame in Sender.send()");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}

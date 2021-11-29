@@ -67,8 +67,8 @@ public class CharFrame {
         this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
         this.polynomial = polynomial;
 
-	if(!this.isValid())
-	    throw new InvalidFrameException();
+        if (!this.isValid())
+            throw new InvalidFrameException();
     }
 
     public char getType() {
@@ -77,12 +77,11 @@ public class CharFrame {
 
     public void setType(char type) {
         this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
-	computeCRC();
     }
 
-    public int getNum(){
-	if(num == null)
-	    throw new IllegalStateException();
+    public int getNum() {
+        if (num == null)
+            throw new IllegalStateException();
         return Integer.parseInt(num, 2);
     }
 
@@ -117,7 +116,6 @@ public class CharFrame {
         for (int i = 0; i < data.length(); i++)
             dataBits.append(padLeft(Integer.toBinaryString(data.charAt(i)), '0', 8));
         this.data = dataBits.toString();
-	computeCRC();
     }
 
     /**
@@ -125,14 +123,14 @@ public class CharFrame {
      *
      * @return this CharFrame as a string ready to be sent
      */
-    public String format(){
+    public String format() {
         if (num == null)
             throw new IllegalStateException();
         return FLAG + BitStuffer.stuff(type + num + data + crc) + FLAG;
     }
 
     public boolean isValid() {
-        String crc = CheckSumCalculator.computeCRC(type + num + data, polynomial);
-        return crc.equals(this.crc);
+        String rest = CheckSumCalculator.cyclicDivisionRest(type + num + data + crc, polynomial);
+        return Integer.parseInt(rest, 2) == 0;
     }
 }

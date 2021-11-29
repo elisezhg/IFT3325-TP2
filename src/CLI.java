@@ -12,9 +12,9 @@ public class CLI {
 
         while (line != null) {
             String[] params = line.split(" ");
-	    if(params.length <= 0)
-		continue;
-	    if (params[0].equalsIgnoreCase("sender")) {
+            if (params.length <= 0)
+                continue;
+            if (params[0].equalsIgnoreCase("sender")) {
                 try {
                     System.out.println("sending...");
 
@@ -30,17 +30,15 @@ public class CLI {
                         System.out.println("Protocol not implemented.");
                     }
 
-                //TODO: better error management
-		} catch (UnknownHostException e) {
-		    System.out.println("Unknown Host");
-		} catch (FileNotFoundException e) {
-		    System.out.println("File not found.");
-		}
-		catch (Exception e) {
+                } catch (UnknownHostException e) {
+                    System.out.println("Unknown Host");
+                } catch (FileNotFoundException e) {
+                    System.out.println("File not found.");
+                } catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
 
-            // Instantiate Receiver
+                // Instantiate Receiver
             } else if (params[0].equalsIgnoreCase("receiver")) {
                 try {
                     System.out.println("listening...");
@@ -50,15 +48,13 @@ public class CLI {
                     Receiver receiver = new Receiver(port);
                     receiver.listen();
 
-                //TODO: better error management
                 } catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
 
-	    } else if (params[0].equalsIgnoreCase("test")) {
-		Test.runTests();
-	    }
-	    else {
+            } else if (params[0].equalsIgnoreCase("test")) {
+                Test.runTests();
+            } else {
                 System.out.println("Command not recognized.");
             }
 

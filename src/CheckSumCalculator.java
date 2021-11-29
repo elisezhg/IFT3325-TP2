@@ -18,7 +18,33 @@ public class CheckSumCalculator {
         return result.toString();
     }
 
-    private static String cyclicDivisionRest(String bitstring, String polynomial) {
+    
+    /**
+     * @return str padded with '0' to the left to reach target length
+     */
+    private static String padLeft(String str, char pad, int targetLength) {
+        StringBuilder result = new StringBuilder(str);
+        while (result.length() < targetLength) {
+            result.insert(0, pad);
+        }
+        return result.toString();
+    }
+    
+    // PUBLIC METHODS
+    /**
+     * @return 16-bit code that allows for error checking
+     */
+    public static String computeCRC(String bitstring, String polynomial) {
+        char[] zeros = new char[polynomial.length() - 1];
+        Arrays.fill(zeros, '0');
+        
+        StringBuilder dividend = new StringBuilder(bitstring);
+        dividend.append(zeros);
+        
+        return padLeft(cyclicDivisionRest(dividend.toString(), polynomial), '0', 16);
+    }
+
+    public static String cyclicDivisionRest(String bitstring, String polynomial) {
         StringBuilder rest = new StringBuilder(bitstring);
         for (int i = 0; i <= rest.length() - polynomial.length(); i++) {
             if (rest.charAt(i) == '1') {
@@ -32,30 +58,5 @@ public class CheckSumCalculator {
             rest.deleteCharAt(0);
         }
         return rest.toString();
-    }
-
-    /**
-     * @return str padded with '0' to the left to reach target length
-     */
-    private static String padLeft(String str, char pad, int targetLength) {
-        StringBuilder result = new StringBuilder(str);
-        while (result.length() < targetLength) {
-            result.insert(0, pad);
-        }
-        return result.toString();
-    }
-
-    // PUBLIC METHODS
-    /**
-     * @return 16-bit code that allows for error checking
-     */
-    public static String computeCRC(String bitstring, String polynomial) {
-        char[] zeros = new char[polynomial.length() - 1];
-        Arrays.fill(zeros, '0');
-
-        StringBuilder dividend = new StringBuilder(bitstring);
-        dividend.append(zeros);
-
-        return padLeft(cyclicDivisionRest(dividend.toString(), polynomial), '0', 16);
     }
 }

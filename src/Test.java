@@ -42,7 +42,7 @@ public class Test {
 
             // start sender
             Sender sender = new Sender("localhost", TEST_PORT);
-            // TODO: make runTests() create its own test file and delete it afterward
+
             String filename = "test/foo.txt";
             Thread senderThread = new Thread(new Runnable() {
                 public void run() {
@@ -161,9 +161,7 @@ public class Test {
             sender.close();
             senderSocket.close();
             receiverSocket.close();
-        } catch (
-
-        IOException e) {
+        } catch (IOException e) {
             System.out.println("IOException. Stopping tests.");
         } catch (InterruptedException e) {
             System.out.println("Thread error in tests. Stopping tests.");
