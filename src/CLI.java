@@ -11,6 +11,7 @@ public class CLI {
         String line = scanner.nextLine();
 
         while (line != null) {
+	    System.out.print("\n >> ");
             String[] params = line.split(" ");
             if (params.length <= 0)
                 continue;

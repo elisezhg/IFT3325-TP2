@@ -195,21 +195,30 @@
 <body>
 <div id="content" class="content">
 <h1 class="title">IFT3325 Téléinformatique : Devoir 2</h1>
-<div id="outline-container-orga41c5dd" class="outline-2">
-<h2 id="orga41c5dd"><span class="section-number-2">1.</span> Diagramme de classes</h2>
-</div>
+<div id="outline-container-org8c755b6" class="outline-2">
+<h2 id="org8c755b6">Diagramme de classes</h2>
+<div class="outline-text-2" id="text-org8c755b6">
 
-<div id="outline-container-orgfd60b93" class="outline-2">
-<h2 id="orgfd60b93"><span class="section-number-2">2.</span> Classes</h2>
-<div class="outline-text-2" id="text-2">
+<div id="org5f6b5d1" class="figure">
+<p><img src="Diagramme de classe.png" alt="Diagramme de classe.png" />
+</p>
 </div>
-<div id="outline-container-org4488b65" class="outline-3">
-<h3 id="org4488b65"><span class="section-number-3">2.1.</span> BitStuffer</h3>
-<div class="outline-text-3" id="text-2-1">
 </div>
-<div id="outline-container-orge6af682" class="outline-4">
-<h4 id="orge6af682"><span class="section-number-4">2.1.1.</span> <span class="underline">+stuff(bitstring:String):String</span></h4>
-<div class="outline-text-4" id="text-2-1-1">
+</div>
+<div id="outline-container-orgd41023b" class="outline-2">
+<h2 id="orgd41023b">Classes</h2>
+<div class="outline-text-2" id="text-orgd41023b">
+</div>
+<div id="outline-container-org4271e14" class="outline-3">
+<h3 id="org4271e14">BitStuffer</h3>
+<div class="outline-text-3" id="text-org4271e14">
+<p>
+Contient les méthodes statiques nécessaires au bitstuffing.
+</p>
+</div>
+<div id="outline-container-orgaceed49" class="outline-4">
+<h4 id="orgaceed49"><span class="underline">+stuff(bitstring:String):String</span></h4>
+<div class="outline-text-4" id="text-orgaceed49">
 <p>
 Prends en paramètre une chaine de '0' et '1' sous forme
 de String et retourne la même chaine où chaque suite de
@@ -217,24 +226,28 @@ cinq '1' est maintenant suivie d'un '0'.
 </p>
 </div>
 </div>
-<div id="outline-container-org91d52fe" class="outline-4">
-<h4 id="org91d52fe"><span class="section-number-4">2.1.2.</span> <span class="underline">+destuff(bitstring:String):String</span></h4>
-<div class="outline-text-4" id="text-2-1-2">
+<div id="outline-container-orgc3b6005" class="outline-4">
+<h4 id="orgc3b6005"><span class="underline">+destuff(bitstring:String):String</span></h4>
+<div class="outline-text-4" id="text-orgc3b6005">
 <p>
-Effectue l'inverse de la fonction <code>stuff(String)</code> en retirant
+L'inverse à gauche de la fonction <code>stuff(String)</code> en retirant
 tous les '1' qui suivent cinq '0'
 de sorte que <code>s==destuff(stuff(s))</code>.
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org89628c0" class="outline-3">
-<h3 id="org89628c0"><span class="section-number-3">2.2.</span> CharFrame</h3>
-<div class="outline-text-3" id="text-2-2">
+<div id="outline-container-orgfa91aa1" class="outline-3">
+<h3 id="orgfa91aa1">CharFrame</h3>
+<div class="outline-text-3" id="text-orgfa91aa1">
+<p>
+Trame orientée caractère capable de calculer un CRC pour son contenu et
+d'effectuer du bitstuffing.
+</p>
 </div>
-<div id="outline-container-orgad47f8f" class="outline-4">
-<h4 id="orgad47f8f"><span class="section-number-4">2.2.1.</span> +CharFrame(type:char, data:String, polynomial:String)</h4>
-<div class="outline-text-4" id="text-2-2-1">
+<div id="outline-container-org1cf295e" class="outline-4">
+<h4 id="org1cf295e">+CharFrame(type:char, data:String, polynomial:String)</h4>
+<div class="outline-text-4" id="text-org1cf295e">
 <p>
 Construit une trame à partir d'un type, de données et d'un polynôme
 utilisé pour le contrôle d'erreur. Le numéro de la trame
@@ -242,9 +255,9 @@ doit être ajouté via la méthode <code>setNum(int)</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-orgb28959a" class="outline-4">
-<h4 id="orgb28959a"><span class="section-number-4">2.2.2.</span> +CharFrame(frame:String, polynomial:String)</h4>
-<div class="outline-text-4" id="text-2-2-2">
+<div id="outline-container-org8399466" class="outline-4">
+<h4 id="org8399466">+CharFrame(frame:String, polynomial:String)</h4>
+<div class="outline-text-4" id="text-org8399466">
 <p>
 Construit une trame à partir d'une string de bits telle que
 celle produite par la fonction <code>format()</code>. Si la trame comprends des erreurs
@@ -252,96 +265,99 @@ lance une <code>InvalidFrameException</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-org282a131" class="outline-4">
-<h4 id="org282a131"><span class="section-number-4">2.2.3.</span> <span class="underline">-padLeft(str:String, pad:char, targetlength:int):String</span></h4>
-<div class="outline-text-4" id="text-2-2-3">
+<div id="outline-container-org8859d03" class="outline-4">
+<h4 id="org8859d03"><span class="underline">-padLeft(str:String, pad:char, targetlength:int):String</span></h4>
+<div class="outline-text-4" id="text-org8859d03">
 <p>
 Ajoute le <code>pad</code> au début de <code>str</code> autant de fois qu'il faut pour qu'elle
 soit de taille au moins <code>targetlength</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-org3a9c1a3" class="outline-4">
-<h4 id="org3a9c1a3"><span class="section-number-4">2.2.4.</span> -computeCRC()</h4>
-<div class="outline-text-4" id="text-2-2-4">
+<div id="outline-container-org89d49fc" class="outline-4">
+<h4 id="org89d49fc">-computeCRC()</h4>
+<div class="outline-text-4" id="text-org89d49fc">
 <p>
 Calcule le checksum pour la trame et le place dans le champ <code>crc</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-orgbd14897" class="outline-4">
-<h4 id="orgbd14897"><span class="section-number-4">2.2.5.</span> +getType():char</h4>
-<div class="outline-text-4" id="text-2-2-5">
+<div id="outline-container-org88cb2b2" class="outline-4">
+<h4 id="org88cb2b2">+getType():char</h4>
+<div class="outline-text-4" id="text-org88cb2b2">
 <p>
 Retourne le type de la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-org4d285e5" class="outline-4">
-<h4 id="org4d285e5"><span class="section-number-4">2.2.6.</span> +setType(type:char)</h4>
-<div class="outline-text-4" id="text-2-2-6">
+<div id="outline-container-org1c6eebf" class="outline-4">
+<h4 id="org1c6eebf">+setType(type:char)</h4>
+<div class="outline-text-4" id="text-org1c6eebf">
 <p>
 Assigne un type à la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-org70712ca" class="outline-4">
-<h4 id="org70712ca"><span class="section-number-4">2.2.7.</span> +getNum():int</h4>
-<div class="outline-text-4" id="text-2-2-7">
+<div id="outline-container-org7a76403" class="outline-4">
+<h4 id="org7a76403">+getNum():int</h4>
+<div class="outline-text-4" id="text-org7a76403">
 <p>
 Retourne le numéro de la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-org7ed5373" class="outline-4">
-<h4 id="org7ed5373"><span class="section-number-4">2.2.8.</span> +setNum(num:int)</h4>
-<div class="outline-text-4" id="text-2-2-8">
+<div id="outline-container-org63eb056" class="outline-4">
+<h4 id="org63eb056">+setNum(num:int)</h4>
+<div class="outline-text-4" id="text-org63eb056">
 <p>
 Assigne un numéro qui doit être représentable sur
 <code>NUM_BITSIZE</code> bits à la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-org4cb66ea" class="outline-4">
-<h4 id="org4cb66ea"><span class="section-number-4">2.2.9.</span> +getData():String</h4>
-<div class="outline-text-4" id="text-2-2-9">
+<div id="outline-container-orgc55fe7a" class="outline-4">
+<h4 id="orgc55fe7a">+getData():String</h4>
+<div class="outline-text-4" id="text-orgc55fe7a">
 <p>
 Retourne les données de la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-orgd543867" class="outline-4">
-<h4 id="orgd543867"><span class="section-number-4">2.2.10.</span> +setData(String data)</h4>
-<div class="outline-text-4" id="text-2-2-10">
+<div id="outline-container-org5be4b05" class="outline-4">
+<h4 id="org5be4b05">+setData(String data)</h4>
+<div class="outline-text-4" id="text-org5be4b05">
 <p>
 Assigne de nouvelles données à la trame.
 </p>
 </div>
 </div>
-<div id="outline-container-org40dada7" class="outline-4">
-<h4 id="org40dada7"><span class="section-number-4">2.2.11.</span> +format():String</h4>
-<div class="outline-text-4" id="text-2-2-11">
+<div id="outline-container-orgee274a2" class="outline-4">
+<h4 id="orgee274a2">+format():String</h4>
+<div class="outline-text-4" id="text-orgee274a2">
 <p>
 Retourne la trame sous forme de chaine de bits.
 </p>
 </div>
 </div>
-<div id="outline-container-orge3c8a84" class="outline-4">
-<h4 id="orge3c8a84"><span class="section-number-4">2.2.12.</span> +isValid():boolean</h4>
-<div class="outline-text-4" id="text-2-2-12">
+<div id="outline-container-org3cb4283" class="outline-4">
+<h4 id="org3cb4283">+isValid():boolean</h4>
+<div class="outline-text-4" id="text-org3cb4283">
 <p>
 retourne vrai si le champs crc est correct.
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org7a2208d" class="outline-3">
-<h3 id="org7a2208d"><span class="section-number-3">2.3.</span> CheckSumCalculator</h3>
-<div class="outline-text-3" id="text-2-3">
+<div id="outline-container-orgccd52a3" class="outline-3">
+<h3 id="orgccd52a3">CheckSumCalculator</h3>
+<div class="outline-text-3" id="text-orgccd52a3">
+<p>
+Contient les méthodes statiques nécessaires pour le calcul du CRC.
+</p>
 </div>
-<div id="outline-container-org3f83518" class="outline-4">
-<h4 id="org3f83518"><span class="section-number-4">2.3.1.</span> <span class="underline">-xor(s1:String, s2:String):String</span></h4>
-<div class="outline-text-4" id="text-2-3-1">
+<div id="outline-container-org0d611f6" class="outline-4">
+<h4 id="org0d611f6"><span class="underline">-xor(s1:String, s2:String):String</span></h4>
+<div class="outline-text-4" id="text-org0d611f6">
 <p>
 Retourne le XOR de deux chaines de bits.
 La chaine la plus courte est allongée
@@ -350,39 +366,207 @@ chaines soient de tailles égales.
 </p>
 </div>
 </div>
-<div id="outline-container-org82d46b9" class="outline-4">
-<h4 id="org82d46b9"><span class="section-number-4">2.3.2.</span> <span class="underline">+cyclicDivisionRest(bitstring:String, polynomial:String):String</span></h4>
-<div class="outline-text-4" id="text-2-3-2">
+<div id="outline-container-org86bc443" class="outline-4">
+<h4 id="org86bc443"><span class="underline">+cyclicDivisionRest(bitstring:String, polynomial:String):String</span></h4>
+<div class="outline-text-4" id="text-org86bc443">
 <p>
 Retourne le reste de la division mod 2 du polynome <code>bitstring</code>
 par le polynome <code>polynomial</code>
 </p>
 </div>
 </div>
-<div id="outline-container-org4b10f04" class="outline-4">
-<h4 id="org4b10f04"><span class="section-number-4">2.3.3.</span> <span class="underline">-padLeft(str:String, pad:char, targetlength:int):String</span></h4>
-<div class="outline-text-4" id="text-2-3-3">
+<div id="outline-container-org91dc49c" class="outline-4">
+<h4 id="org91dc49c"><span class="underline">-padLeft(str:String, pad:char, targetlength:int):String</span></h4>
+<div class="outline-text-4" id="text-org91dc49c">
 <p>
 Ajoute le <code>pad</code> au début de <code>str</code> autant de fois qu'il faut pour qu'elle
 soit de taille au moins <code>targetlength</code>.
 </p>
 </div>
 </div>
-<div id="outline-container-org4e46a22" class="outline-4">
-<h4 id="org4e46a22"><span class="section-number-4">2.3.4.</span> <span class="underline">+computeCRC(bitstring:String, polynomial:String):String</span></h4>
-<div class="outline-text-4" id="text-2-3-4">
+<div id="outline-container-org2d0bd37" class="outline-4">
+<h4 id="org2d0bd37"><span class="underline">+computeCRC(bitstring:String, polynomial:String):String</span></h4>
+<div class="outline-text-4" id="text-org2d0bd37">
 <p>
 Calcule et retourne le Cyclical Redundancy Code.
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org41433e2" class="outline-3">
-<h3 id="org41433e2"><span class="section-number-3">2.4.</span> CLI</h3>
-<div class="outline-text-3" id="text-2-4">
+<div id="outline-container-orgcd53b2a" class="outline-3">
+<h3 id="orgcd53b2a">CLI</h3>
+<div class="outline-text-3" id="text-orgcd53b2a">
+<p>
+Interface utilisateur.
+</p>
 </div>
-<div id="outline-container-orga00da1c" class="outline-4">
-<h4 id="orga00da1c"><span class="section-number-4">2.4.1.</span> _+main(args:String[])</h4>
+<div id="outline-container-org625c8c7" class="outline-4">
+<h4 id="org625c8c7"><span class="underline">+main(args:String[])</span></h4>
+<div class="outline-text-4" id="text-org625c8c7">
+<p>
+Lance une invite de commande :
+</p>
+<ul class="org-ul">
+<li><code>Sender &lt;Nom_Machine&gt; &lt;Numero_Port&gt; &lt;Nom_fichier&gt; &lt;0&gt;</code> : envoie un fichier à une
+machine sur un certain port avec Go-Back-N.</li>
+<li><code>Receiver &lt;Numero_Port&gt;</code> : écoute sur le port spécifié.</li>
+<li><code>test</code> : lance les tests</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org72197d1" class="outline-3">
+<h3 id="org72197d1">FrameFileReader</h3>
+<div class="outline-text-3" id="text-org72197d1">
+</div>
+<div id="outline-container-org0515a55" class="outline-4">
+<h4 id="org0515a55">+FrameFileReader(filename:String, polynomial:String)</h4>
+<div class="outline-text-4" id="text-org0515a55">
+<p>
+Ouvre un fichier où chaque ligne pourra être retournée sous
+forme de trame.
+</p>
+</div>
+</div>
+<div id="outline-container-org30f04a4" class="outline-4">
+<h4 id="org30f04a4">+getNextFrame():CharFrame</h4>
+<div class="outline-text-4" id="text-org30f04a4">
+<p>
+Retourne la prochaine ligne du fichier sous forme de trame orientée caractère.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orga81a1ea" class="outline-3">
+<h3 id="orga81a1ea">InvalidFrameException</h3>
+<div class="outline-text-3" id="text-orga81a1ea">
+<p>
+Exception signalant une trame malformée, comportant une erreur.
+</p>
+</div>
+</div>
+<div id="outline-container-org29160ec" class="outline-3">
+<h3 id="org29160ec">PollTask</h3>
+<div class="outline-text-3" id="text-org29160ec">
+<p>
+Permet d'envoyer une trame P-bit après un intervalle de temps.
+</p>
+</div>
+<div id="outline-container-org855ae42" class="outline-4">
+<h4 id="org855ae42">+PollTask(out:PrintWriter, polynomial:String)</h4>
+<div class="outline-text-4" id="text-org855ae42">
+<p>
+Spécifie un PrintWriter à utiliser lors de l'envoie du poll et
+un polynome pour la création de la trame.
+</p>
+</div>
+</div>
+<div id="outline-container-org7d918da" class="outline-4">
+<h4 id="org7d918da">+run()</h4>
+<div class="outline-text-4" id="text-org7d918da">
+<p>
+envoie un poll par le Printwriter.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org72e0a42" class="outline-3">
+<h3 id="org72e0a42">Receiver</h3>
+<div class="outline-text-3" id="text-org72e0a42">
+</div>
+<div id="outline-container-org6058787" class="outline-4">
+<h4 id="org6058787">+Receiver(portNumber:int)</h4>
+<div class="outline-text-4" id="text-org6058787">
+<p>
+Ouvre une serverSocket qui écoute sur le port spécifié.
+</p>
+</div>
+</div>
+<div id="outline-container-org171e50f" class="outline-4">
+<h4 id="org171e50f">+close()</h4>
+<div class="outline-text-4" id="text-org171e50f">
+<p>
+Ferme toute connexion.
+</p>
+</div>
+</div>
+<div id="outline-container-org00a31e4" class="outline-4">
+<h4 id="org00a31e4">+listen()</h4>
+<div class="outline-text-4" id="text-org00a31e4">
+<p>
+Accepte une connexion et traite les requêtes d'un <code>Sender</code>.
+</p>
+</div>
+</div>
+<div id="outline-container-orgda60843" class="outline-4">
+<h4 id="orgda60843">-sendReceipt(type:char, num:int)</h4>
+<div class="outline-text-4" id="text-orgda60843">
+<p>
+Sous-routine de <code>listen()</code>. Envoie un RR ou un REJ.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org6976662" class="outline-3">
+<h3 id="org6976662">Sender</h3>
+<div class="outline-text-3" id="text-org6976662">
+</div>
+<div id="outline-container-org1f29073" class="outline-4">
+<h4 id="org1f29073">+Sender(hostName:String, portNumber:int)</h4>
+<div class="outline-text-4" id="text-org1f29073">
+<p>
+Tente d'ouvrir une connexion avec l'hôte spécifié sur le
+port spécifié.
+</p>
+</div>
+</div>
+<div id="outline-container-org7a10cb4" class="outline-4">
+<h4 id="org7a10cb4">-connect()</h4>
+<div class="outline-text-4" id="text-org7a10cb4">
+<p>
+Envoie une demande de connexion et attend la confirmation.
+Envoie un poll si l'attente dépasse 3 secondes.
+</p>
+</div>
+</div>
+<div id="outline-container-org1539cae" class="outline-4">
+<h4 id="org1539cae">-awaitRR()</h4>
+<div class="outline-text-4" id="text-org1539cae">
+<p>
+Attend qu'une trame reçoive une confirmation ou un rejet
+et traite la réponse.
+Envoie un poll si l'attente dépasse 3 secondes.
+</p>
+</div>
+</div>
+<div id="outline-container-org0d01f8b" class="outline-4">
+<h4 id="org0d01f8b">+send(filename:String)</h4>
+<div class="outline-text-4" id="text-org0d01f8b">
+<p>
+Envoie le contenu d'un fichier sous forme de trames.
+</p>
+</div>
+</div>
+<div id="outline-container-org1fd36be" class="outline-4">
+<h4 id="org1fd36be">+close()</h4>
+<div class="outline-text-4" id="text-org1fd36be">
+<p>
+Ferme la connexion.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc0289f4" class="outline-3">
+<h3 id="orgc0289f4">Test</h3>
+<div class="outline-text-3" id="text-orgc0289f4">
+</div>
+<div id="outline-container-org20fa656" class="outline-4">
+<h4 id="org20fa656">runTests()</h4>
+<div class="outline-text-4" id="text-org20fa656">
+<p>
+Lance les tests.
+</p>
+</div>
 </div>
 </div>
 </div>

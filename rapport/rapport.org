@@ -4,20 +4,26 @@
 #+OPTIONS: author:nil
 #+OPTIONS: date:nil
 #+OPTIONS: timestamp:nil
+#+OPTIONS: num:nil
 :END:
+Alexandre Gravel
+Elise Zheng
 * Diagramme de classes
-
+[[file:Diagramme de classe.png]]
 * Classes
 ** BitStuffer
+Contient les méthodes statiques nécessaires au bitstuffing.
 *** _+stuff(bitstring:String):String_
 Prends en paramètre une chaine de '0' et '1' sous forme
 de String et retourne la même chaine où chaque suite de
 cinq '1' est maintenant suivie d'un '0'.
 ***  _+destuff(bitstring:String):String_
-Effectue l'inverse de la fonction ~stuff(String)~ en retirant
+L'inverse à gauche de la fonction ~stuff(String)~ en retirant
 tous les '1' qui suivent cinq '0'
 de sorte que ~s==destuff(stuff(s))~.
 ** CharFrame
+Trame orientée caractère capable de calculer un CRC pour son contenu et
+d'effectuer du bitstuffing.
 *** +CharFrame(type:char, data:String, polynomial:String)
 Construit une trame à partir d'un type, de données et d'un polynôme
 utilisé pour le contrôle d'erreur. Le numéro de la trame
@@ -49,6 +55,7 @@ Retourne la trame sous forme de chaine de bits.
 *** +isValid():boolean
 retourne vrai si le champs crc est correct.
 ** CheckSumCalculator
+Contient les méthodes statiques nécessaires pour le calcul du CRC.
 *** _-xor(s1:String, s2:String):String_
 Retourne le XOR de deux chaines de bits.
 La chaine la plus courte est allongée
@@ -63,4 +70,52 @@ soit de taille au moins ~targetlength~.
 *** _+computeCRC(bitstring:String, polynomial:String):String_
 Calcule et retourne le Cyclical Redundancy Code.
 ** CLI
+Interface utilisateur.
 *** _+main(args:String[])_
+Lance une invite de commande :
+- ~Sender <Nom_Machine> <Numero_Port> <Nom_fichier> <0>~ : envoie un fichier à une
+  machine sur un certain port avec Go-Back-N.
+- ~Receiver <Numero_Port>~ : écoute sur le port spécifié.
+- ~test~ : lance les tests
+** FrameFileReader
+*** +FrameFileReader(filename:String, polynomial:String)
+Ouvre un fichier où chaque ligne pourra être retournée sous
+forme de trame.
+*** +getNextFrame():CharFrame
+Retourne la prochaine ligne du fichier sous forme de trame orientée caractère.
+** InvalidFrameException
+Exception signalant une trame malformée, comportant une erreur.
+** PollTask
+Permet d'envoyer une trame P-bit après un intervalle de temps.
+*** +PollTask(out:PrintWriter, polynomial:String)
+Spécifie un PrintWriter à utiliser lors de l'envoie du poll et
+un polynome pour la création de la trame.
+*** +run()
+envoie un poll par le Printwriter.
+** Receiver
+*** +Receiver(portNumber:int)
+Ouvre une serverSocket qui écoute sur le port spécifié.
+*** +close()
+Ferme toute connexion.
+*** +listen()
+Accepte une connexion et traite les requêtes d'un ~Sender~.
+*** -sendReceipt(type:char, num:int)
+Sous-routine de ~listen()~. Envoie un RR ou un REJ.
+** Sender
+*** +Sender(hostName:String, portNumber:int)
+Tente d'ouvrir une connexion avec l'hôte spécifié sur le
+port spécifié.
+*** -connect()
+Envoie une demande de connexion et attend la confirmation.
+Envoie un poll si l'attente dépasse 3 secondes.
+*** -awaitRR()
+Attend qu'une trame reçoive une confirmation ou un rejet
+et traite la réponse.
+Envoie un poll si l'attente dépasse 3 secondes.
+*** +send(filename:String)
+Envoie le contenu d'un fichier sous forme de trames.
+*** +close()
+Ferme la connexion.
+** Test
+*** runTests()
+Lance les tests.

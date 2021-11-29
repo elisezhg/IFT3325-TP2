@@ -11,8 +11,8 @@ public class Receiver {
     public static final String CRC_CCITT = "10001000000100001";
     public static final int WINDOW_SIZE = 7;
     public static final int MAX_NUM = 7;
-    public static final String PRINT_PADDING = "\t\t\t\t\t\t\t";
 
+    private static final String PRINT_PADDING = "\t\t\t\t\t\t\t";
     private boolean closed;
 
     private ServerSocket serverSocket;
@@ -39,7 +39,7 @@ public class Receiver {
     /**
      * Listen to the port number
      * https://docs.oracle.com/javase/tutorial/displayCode.html?code=https://docs.oracle.com/javase/tutorial/networking/sockets/examples/EchoServer.java
-     * 
+     *
      * @param portNumber
      */
     public void listen() {
