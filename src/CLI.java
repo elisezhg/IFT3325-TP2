@@ -11,7 +11,7 @@ public class CLI {
         String line = scanner.nextLine();
 
         while (line != null) {
-	    System.out.print("\n >> ");
+            System.out.print("\n >> ");
             String[] params = line.split(" ");
             if (params.length <= 0)
                 continue;
@@ -54,7 +54,31 @@ public class CLI {
                 }
 
             } else if (params[0].equalsIgnoreCase("test")) {
-                Test.runTests();
+                String[] testFiles = new String[] {
+                        "test/fables-lafontaine.txt",
+                        "test/empty.txt",
+                        "test/long-line.txt",
+                        "test/with-flag-character.txt",
+                        "test/multiple-ones.txt"
+                };
+
+                System.out.println("Please choose a file to run the tests with:");
+
+                for (int i = 1; i <= testFiles.length; i++)
+                    System.out.println("[" + i + "] " + testFiles[i - 1]);
+
+                int fileChoice = 0;
+                String filename = "test/fables-lafontaine.txt";
+
+                try {
+                    fileChoice = Integer.parseInt(scanner.nextLine());
+                    filename = testFiles[fileChoice - 1];
+                } catch (Exception e) {
+                    System.out.println("Please check the arguments.");
+                }
+
+                Test.runTests(filename);
+
             } else {
                 System.out.println("Command not recognized.");
             }

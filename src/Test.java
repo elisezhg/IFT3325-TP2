@@ -13,7 +13,7 @@ public class Test {
     public static final int REC_PORT = 50001;
     public static final String PRINT_PADDING = "\t\t\t";
 
-    public static void runTests() {
+    public static void runTests(String filename) {
         System.out.println("Running Tests :");
 
         /*
@@ -43,7 +43,8 @@ public class Test {
             // start sender
             Sender sender = new Sender("localhost", TEST_PORT);
 
-            String filename = "test/foo.txt";
+            // String filename = "test/foo.txt";
+            // String filename = "test/with-flag-character.txt";
             Thread senderThread = new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -71,32 +72,31 @@ public class Test {
             // start a thread to mess with sender -> receiver transmissions
             Thread sToR = new Thread(new Runnable() {
                 public void run() {
-                    int counter = 0;
+                    double rand;
                     String m;
                     while (true) {
                         try {
                             while ((m = senderIn.readLine()) != null) {
-                                // TODO:tests
+                                rand = Math.random();
 
-                                // Frame with errors from Sender
-                                if (counter == 4) {
-                                    System.out.println(PRINT_PADDING + "S to R: Corrupted frame");
+                                // 10% chance: Frame with errors from Sender
+                                if (rand <= 0.1) {
+                                    System.out.println(PRINT_PADDING + "-- S to R: Corrupted frame -->");
                                     m = randError(m);
 
-                                    // Frame lost from Sender
-                                } else if (counter == 2) {
-                                    System.out.println(PRINT_PADDING + "S to R: Frame lost");
-                                    counter++;
+                                    // 10% chance: Frame lost from Sender
+                                } else if (rand <= 0.2) {
+                                    System.out.println(PRINT_PADDING + "-- S to R: Frame lost -->");
                                     continue;
 
-                                    // Frame delayed
-                                } else if (counter == 6) {
-                                    System.out.println(PRINT_PADDING + "S to R: Frame delayed");
-                                    Thread.sleep(7000);
+                                    // 10% chance: Frame delayed
+                                } else if (rand <= 0.3) {
+                                    long delay = (long) (4000 * Math.random());
+                                    System.out.println(PRINT_PADDING + "-- S to R: Frame delayed by " + delay + "ms -->");
+                                    Thread.sleep(delay);
                                 }
 
                                 recOut.println(m);
-                                counter++;
                             }
                         } catch (IOException e) {
                             System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
@@ -112,34 +112,32 @@ public class Test {
 
             // start a thread to mess with receiver -> sender transmissions
             Thread rToS = new Thread(new Runnable() {
-                int counter = 0;
-
                 public void run() {
+                    double rand;
                     String m;
                     while (true) {
                         try {
                             while ((m = recIn.readLine()) != null) {
-                                // TODO:tests
+                                rand = Math.random();
 
-                                // Frame with errors from Receiver
-                                if (counter == 3) {
-                                    System.out.println(PRINT_PADDING + "R to S: Corrupted frame");
+                                // 10% chance: Frame with errors from Receiver
+                                if (rand <= 0.1) {
+                                    System.out.println(PRINT_PADDING + "<-- R to S: Corrupted frame --");
                                     m = randError(m);
 
-                                    // Frame lost from Receiver
-                                } else if (counter == 5) {
-                                    System.out.println(PRINT_PADDING + "R to S: Frame lost");
-                                    counter++;
+                                    // 10% chance: Frame lost from Receiver
+                                } else if (rand <= 0.2) {
+                                    System.out.println(PRINT_PADDING + "<-- R to S: Frame lost --");
                                     continue;
 
-                                    // Frame delayed
-                                } else if (counter == 6) {
-                                    System.out.println(PRINT_PADDING + "R to S: Frame delayed");
-                                    Thread.sleep(7000);
+                                    // 10% chance: Frame delayed
+                                } else if (rand <= 0.3) {
+                                    long delay = (long) (4000 * Math.random());
+                                    System.out.println(PRINT_PADDING + "<-- R to S: Frame delayed by " + delay + "ms --");
+                                    Thread.sleep(delay);
                                 }
 
                                 senderOut.println(m);
-                                counter++;
                             }
                         } catch (IOException e) {
                             System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
@@ -161,6 +159,7 @@ public class Test {
             sender.close();
             senderSocket.close();
             receiverSocket.close();
+
         } catch (IOException e) {
             System.out.println("IOException. Stopping tests.");
         } catch (InterruptedException e) {

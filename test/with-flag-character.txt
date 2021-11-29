@@ -1,0 +1,5 @@
+~
+~
+this~is~a~line~with~the~flag~character
+this is a line without the flag character
+end of file

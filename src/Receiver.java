@@ -12,7 +12,7 @@ public class Receiver {
     public static final int WINDOW_SIZE = 7;
     public static final int MAX_NUM = 7;
 
-    private static final String PRINT_PADDING = "\t\t\t\t\t\t\t";
+    private static final String PRINT_PADDING = "\t\t\t\t\t\t\t\t\t";
     private boolean closed;
 
     private ServerSocket serverSocket;
@@ -49,7 +49,7 @@ public class Receiver {
             this.out = new PrintWriter(clientSocket.getOutputStream(), true);
             this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            FrameFileWriter ffw = new FrameFileWriter("./test/out.txt");
+            FrameFileWriter ffw = new FrameFileWriter();
 
             // Init
             Boolean connected = false;
@@ -83,12 +83,11 @@ public class Receiver {
                         sendReceipt('A', expectedFrameNum);
                     }
 
+                    // Establish connection if not done yet
+                    if (!connected && receivedFrameType == 'C')
+                        connected = true;
+
                     if (isNextFrame) {
-
-                        // Establish connection if not done yet
-                        if (!connected && receivedFrameType == 'C')
-                            connected = true;
-
                         if (connected) {
                             System.out.println(
                                     PRINT_PADDING + "Received no." + receivedFrameNum +
@@ -96,21 +95,21 @@ public class Receiver {
 
                             isWaitingForResend = false;
 
+                            // Set last received number to current frame number
+                            expectedFrameNum = (receivedFrameNum + 1) % (MAX_NUM + 1);
+
                             // Write to file
                             if (receivedFrameType == 'I') {
-                                // ffw.write(receivedFrame);
                                 ffw.write(receivedFrame);
 
                                 // If frame demands to end connection
                             } else if (receivedFrameType == 'F') {
+                                sendReceipt('A', (receivedFrameNum + 1) % (MAX_NUM + 1));
                                 ffw.close();
                                 close();
                                 System.out.println(PRINT_PADDING + "Ending connection.");
                                 break;
                             }
-
-                            // Set last received number to current frame number
-                            expectedFrameNum = (receivedFrameNum + 1) % (MAX_NUM + 1);
 
                             // Send reception receipt (RR)
                             sendReceipt('A', expectedFrameNum);
@@ -124,12 +123,15 @@ public class Receiver {
                     } else {
                         System.out.println(
                                 PRINT_PADDING + "Invalid frame: received no." + receivedFrameNum);
-                        System.out.println(PRINT_PADDING + "\nexpected no." + expectedFrameNum);
+                        System.out.println(PRINT_PADDING + "expected no." + expectedFrameNum);
 
                         if (!isWaitingForResend) {
                             sendReceipt('R', expectedFrameNum);
                             isWaitingForResend = true;
                         }
+
+                        if (receivedFrameType == 'C')
+                            sendReceipt('A', 0);
                     }
                 } catch (InvalidFrameException e) {
                     System.out.println(PRINT_PADDING + "Corrupted frame: ignored");

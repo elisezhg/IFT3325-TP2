@@ -5,24 +5,25 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class FrameFileWriter {
     BufferedWriter writer;
-
-    public FrameFileWriter(String filename) throws IOException {
+    
+    public FrameFileWriter() throws IOException {
+        String filename = new SimpleDateFormat("'test/out/'yyyyMMddHHmmss'.txt'").format(new Date());
         createOutputFile(filename);
         writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, true), "UTF-8"));
     }
 
     /**
-     * Create the output file if it doesn't already exists
-     *
-     * @return read frame
+     * Create the output file if it doesn't already exist
+     * @param filename
      */
     public void createOutputFile(String filename) throws IOException {
         try {
             File file = new File(filename);
-            file.delete();
             file.createNewFile();
             
         } catch (IOException e) {

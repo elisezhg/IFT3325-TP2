@@ -54,21 +54,20 @@ public class Sender {
 			out.println(receptionFrame.format());
 
 			// Set timeout
-			PollTask pollTask = new PollTask(out, CRC_CCITT);
+			ConnectionTask connectionTask = new ConnectionTask(out, CRC_CCITT);
 			Timer timeout = new Timer();
-			timeout.schedule(pollTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
+			timeout.schedule(connectionTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
-			receptionFrame = new CharFrame(in.readLine(), CRC_CCITT);
+			String receptionFrameString = in.readLine();
 			timeout.cancel();
+			receptionFrame = new CharFrame(receptionFrameString, CRC_CCITT);
 
 			if (receptionFrame.getType() != 'A') {
 				System.out.println("Connection request rejected");
 				return false;
 			}
 		} catch (InvalidFrameException e) {
-			System.out.println("Error in Sender.connect()");
-			e.printStackTrace();
-			System.exit(1);
+			System.out.println("Sender received invalid frame");
 		} catch (IOException e) {
 			System.out.println("IOException in Sender.connect()");
 			return false;
@@ -108,6 +107,7 @@ public class Sender {
 					if (receptionFrame.getType() == 'A') {
 						break;
 					}
+					
 					// else type is 'R'
 					System.out.println("Resent no." + f.getNum() + ": \"" + f.getData() + "\"");
 					out.println(f.format());
@@ -162,11 +162,8 @@ public class Sender {
 			}
 
 			// close connection
-			sendFrame = new CharFrame('F', "", CRC_CCITT);
-			sendFrame.setNum(nextFrameNum);
-			System.out.println("Sending closing request no." + sendFrame.getNum());
-			out.println(sendFrame.format());
-			System.out.println("Closed connection");
+			while (!close()) {
+			}
 
 		} catch (FileNotFoundException e) {
 			throw e;
@@ -178,7 +175,39 @@ public class Sender {
 
 	}
 
-	public void close() {
+	public boolean close() throws IOException {
+		try {
+			CharFrame sendFrame = new CharFrame('F', "", CRC_CCITT);
+			sendFrame.setNum(nextFrameNum);
+			System.out.println("Sending closing request no." + sendFrame.getNum());
+			out.println(sendFrame.format());
+
+			// Set timeout
+			ClosingTask closingTask = new ClosingTask(out, CRC_CCITT, nextFrameNum);
+			Timer timeout = new Timer();
+			timeout.schedule(closingTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
+
+			String receptionFrameString = in.readLine();
+			timeout.cancel();
+			CharFrame receptionFrame = new CharFrame(receptionFrameString, CRC_CCITT);
+
+			if (receptionFrame.getType() != 'A') {
+				System.out.println("Closing request rejected");
+				return false;
+			}
+		} catch (InvalidFrameException e) {
+			System.out.println("Sender received invalid frame");
+		} catch (IOException e) {
+			System.out.println("IOException in Sender.connect()");
+			return false;
+		}
+
+		System.out.println("Closed connection");
+		socket.close();
+		return true;
+	}
+
+	public void close2() {
 		try {
 			socket.close();
 		} catch (IOException e) {
