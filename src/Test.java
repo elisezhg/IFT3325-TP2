@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Random;
 
 public class Test {
@@ -13,6 +14,11 @@ public class Test {
     public static final int REC_PORT = 50001;
     public static final String PRINT_PADDING = "\t\t\t";
 
+    /**
+     * Runs the tests
+     * 
+     * @param filename name of the test file
+     */
     public static void runTests(String filename) {
         System.out.println("Running Tests :");
 
@@ -42,9 +48,6 @@ public class Test {
 
             // start sender
             Sender sender = new Sender("localhost", TEST_PORT);
-
-            // String filename = "test/foo.txt";
-            // String filename = "test/with-flag-character.txt";
             Thread senderThread = new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -76,29 +79,33 @@ public class Test {
                     String m;
                     while (true) {
                         try {
-                            while ((m = senderIn.readLine()) != null) {
+                            while (!senderSocket.isClosed() && (m = senderIn.readLine()) != null) {
                                 rand = Math.random();
 
                                 // 10% chance: Frame with errors from Sender
-                                if (rand <= 0.1) {
+                                if (rand <= 0.05) {
                                     System.out.println(PRINT_PADDING + "-- S to R: Corrupted frame -->");
                                     m = randError(m);
 
                                     // 10% chance: Frame lost from Sender
-                                } else if (rand <= 0.2) {
+                                } else if (rand <= 0.1) {
                                     System.out.println(PRINT_PADDING + "-- S to R: Frame lost -->");
                                     continue;
 
                                     // 10% chance: Frame delayed
-                                } else if (rand <= 0.3) {
+                                } else if (rand <= 0.15) {
                                     long delay = (long) (4000 * Math.random());
-                                    System.out.println(PRINT_PADDING + "-- S to R: Frame delayed by " + delay + "ms -->");
+                                    System.out
+                                            .println(PRINT_PADDING + "-- S to R: Frame delayed by " + delay + "ms -->");
                                     Thread.sleep(delay);
                                 }
 
                                 recOut.println(m);
                             }
+                        } catch (SocketException e) {
+                            System.out.println("Socket is closed. Stopping tests");
                         } catch (IOException e) {
+                            e.printStackTrace();
                             System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
                             return;
                         } catch (InterruptedException e) {
@@ -121,25 +128,32 @@ public class Test {
                                 rand = Math.random();
 
                                 // 10% chance: Frame with errors from Receiver
-                                if (rand <= 0.1) {
+                                if (rand <= 0.05) {
                                     System.out.println(PRINT_PADDING + "<-- R to S: Corrupted frame --");
                                     m = randError(m);
 
                                     // 10% chance: Frame lost from Receiver
-                                } else if (rand <= 0.2) {
+                                } else if (rand <= 0.1) {
                                     System.out.println(PRINT_PADDING + "<-- R to S: Frame lost --");
                                     continue;
 
                                     // 10% chance: Frame delayed
-                                } else if (rand <= 0.3) {
+                                } else if (rand <= 0.15) {
                                     long delay = (long) (4000 * Math.random());
-                                    System.out.println(PRINT_PADDING + "<-- R to S: Frame delayed by " + delay + "ms --");
+                                    System.out
+                                            .println(PRINT_PADDING + "<-- R to S: Frame delayed by " + delay + "ms --");
                                     Thread.sleep(delay);
                                 }
 
                                 senderOut.println(m);
                             }
+
+                            // Receiver closed
+                            receiverSocket.close();
+                            senderSocket.close();
+
                         } catch (IOException e) {
+                            e.printStackTrace();
                             System.out.println("IOException in Sender to Receiver transmission. Stopping tests");
                             return;
                         } catch (InterruptedException e) {
@@ -169,6 +183,12 @@ public class Test {
 
     }
 
+    /**
+     * Generates random error on a given string
+     * 
+     * @param s
+     * @return s with flipped bits
+     */
     public static String randError(String s) {
         StringBuilder result = new StringBuilder(s);
         Random rand = new Random();

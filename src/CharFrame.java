@@ -16,6 +16,11 @@ public class CharFrame {
 
     // PRIVATE METHODS
     /**
+     * Add left-padding to a given string
+     * 
+     * @param str          string to be padded
+     * @param pad          character to pad with
+     * @param targetLength target length of the string
      * @return str padded with '0' to the left to reach target length
      */
     private static String padLeft(String str, char pad, int targetLength) {
@@ -27,7 +32,7 @@ public class CharFrame {
     }
 
     /**
-     * computes checksum for the frame
+     * Computes checksum for the frame
      */
     private void computeCRC() {
         this.crc = CheckSumCalculator.computeCRC(type + num + data, polynomial);
@@ -53,38 +58,62 @@ public class CharFrame {
      * @throws InvalidFrameException if frame has invalid flags or checksum
      */
     public CharFrame(String frame, String polynomial) throws InvalidFrameException {
-        if (!frame.substring(0, FLAG.length()).equals(FLAG)
-                || !frame.substring(frame.length() - FLAG.length()).equals(FLAG)) {
-            // if flag is not found at start and end of frame
+        try {
+            if (!frame.substring(0, FLAG.length()).equals(FLAG)
+                    || !frame.substring(frame.length() - FLAG.length()).equals(FLAG)) {
+                // if flag is not found at start and end of frame
+                throw new InvalidFrameException();
+            }
+
+            String content = BitStuffer.destuff(frame.substring(FLAG.length(), frame.length() - FLAG.length()));
+
+            this.type = content.substring(0, TYPE_BITSIZE);
+            this.num = content.substring(TYPE_BITSIZE, TYPE_BITSIZE + NUM_BITSIZE);
+            this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
+            this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
+            this.polynomial = polynomial;
+        } catch (StringIndexOutOfBoundsException e) {
             throw new InvalidFrameException();
         }
-
-        String content = BitStuffer.destuff(frame.substring(FLAG.length(), frame.length() - FLAG.length()));
-
-        this.type = content.substring(0, TYPE_BITSIZE);
-        this.num = content.substring(TYPE_BITSIZE, TYPE_BITSIZE + NUM_BITSIZE);
-        this.data = content.substring(TYPE_BITSIZE + NUM_BITSIZE, content.length() - CRC_BITSIZE);
-        this.crc = content.substring(content.length() - CRC_BITSIZE, content.length());
-        this.polynomial = polynomial;
 
         if (!this.isValid())
             throw new InvalidFrameException();
     }
 
+    /**
+     * Converts the type field from binary to char and returns it
+     * 
+     * @return type field
+     */
     public char getType() {
         return (char) Integer.parseInt(type, 2);
     }
 
+    /**
+     * Sets the type field in binary
+     * 
+     * @param type type of the CharFrame
+     */
     public void setType(char type) {
         this.type = padLeft(Integer.toBinaryString(type), '0', TYPE_BITSIZE);
     }
 
+    /**
+     * Converts the num field from binary to int and returns it
+     * 
+     * @return num field
+     */
     public int getNum() {
         if (num == null)
             throw new IllegalStateException();
         return Integer.parseInt(num, 2);
     }
 
+    /**
+     * Sets the num field in binary
+     * 
+     * @param num num of the CharFrame
+     */
     public void setNum(int num) {
         String numstr = Integer.toBinaryString(num);
         if (NUM_BITSIZE < numstr.length()) {
@@ -97,6 +126,11 @@ public class CharFrame {
         computeCRC();
     }
 
+    /**
+     * Converts the data field from binary to String and returns it
+     * 
+     * @return the data field in plain text
+     */
     public String getData() {
         StringBuilder str = new StringBuilder();
 
@@ -109,6 +143,8 @@ public class CharFrame {
     }
 
     /**
+     * Takes a string and encodes it in binary (UTF8)
+     * 
      * @param data as plain text
      */
     public void setData(String data) {
@@ -119,8 +155,8 @@ public class CharFrame {
     }
 
     /**
-     * computes checksum and adds bitstuffing
-     *
+     * Computes checksum and adds bitstuffing
+     * 
      * @return this CharFrame as a string ready to be sent
      */
     public String format() {
@@ -129,6 +165,11 @@ public class CharFrame {
         return FLAG + BitStuffer.stuff(type + num + data + crc) + FLAG;
     }
 
+    /**
+     * Check the validity of the CharFrame
+     * 
+     * @return true if the CharFrame's not corrupted
+     */
     public boolean isValid() {
         String rest = CheckSumCalculator.cyclicDivisionRest(type + num + data + crc, polynomial);
         return Integer.parseInt(rest, 2) == 0;

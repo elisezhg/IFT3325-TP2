@@ -55,6 +55,7 @@ public class CLI {
 
             } else if (params[0].equalsIgnoreCase("test")) {
                 String[] testFiles = new String[] {
+                        "test/extrait-lafontaine.txt",
                         "test/fables-lafontaine.txt",
                         "test/empty.txt",
                         "test/long-line.txt",
@@ -68,7 +69,7 @@ public class CLI {
                     System.out.println("[" + i + "] " + testFiles[i - 1]);
 
                 int fileChoice = 0;
-                String filename = "test/fables-lafontaine.txt";
+                String filename = "test/extrait-lafontaine.txt";
 
                 try {
                     fileChoice = Integer.parseInt(scanner.nextLine());
@@ -76,7 +77,7 @@ public class CLI {
                 } catch (Exception e) {
                     System.out.println("Please check the arguments.");
                 }
-
+                
                 Test.runTests(filename);
 
             } else {

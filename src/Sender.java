@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Timer;
+import java.util.TimerTask;
 
 public class Sender {
 
@@ -45,6 +46,11 @@ public class Sender {
 
 	}
 
+	/**
+	 * Sends a connection request every 3 seconds to the Receiver until it replies
+	 * 
+	 * @return if succeeded
+	 */
 	private boolean connect() {
 
 		try {
@@ -54,9 +60,20 @@ public class Sender {
 			out.println(receptionFrame.format());
 
 			// Set timeout
-			ConnectionTask connectionTask = new ConnectionTask(out, CRC_CCITT);
+			// Set timeout
+			TimerTask task = new TimerTask() {
+				public void run() {
+					CharFrame req = new CharFrame('C', "", CRC_CCITT);
+					req.setNum(0);
+
+					synchronized (out) {
+						System.out.println("Sending connection request");
+						out.println(req.format());
+					}
+				}
+			};
 			Timer timeout = new Timer();
-			timeout.schedule(connectionTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
+			timeout.schedule(task, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
 			String receptionFrameString = in.readLine();
 			timeout.cancel();
@@ -78,17 +95,31 @@ public class Sender {
 		return true;
 	}
 
+	/**
+	 * Waits for the reply of the Receiver and sends a poll
+	 * if it didn't receive the reply in 3 seconds
+	 */
 	private void awaitRR() {
 		String receivedFrameString;
 
 		try {
 			// Set timeout
-			PollTask pollTask = new PollTask(out, CRC_CCITT);
+			TimerTask task = new TimerTask() {
+				public void run() {
+					CharFrame conn = new CharFrame('P', "", CRC_CCITT);
+					conn.setNum(0);
+
+					synchronized (out) {
+						System.out.println("Sending poll");
+						out.println(conn.format());
+					}
+				}
+			};
 			Timer timeout = new Timer();
-			timeout.schedule(pollTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
+			timeout.schedule(task, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
 			receivedFrameString = in.readLine();
-			pollTask.cancel();
+			task.cancel();
 			CharFrame receptionFrame = new CharFrame(receivedFrameString, CRC_CCITT);
 
 			System.out.println("Received " + receptionFrame.getType() + " for no." + receptionFrame.getNum());
@@ -107,7 +138,7 @@ public class Sender {
 					if (receptionFrame.getType() == 'A') {
 						break;
 					}
-					
+
 					// else type is 'R'
 					System.out.println("Resent no." + f.getNum() + ": \"" + f.getData() + "\"");
 					out.println(f.format());
@@ -175,7 +206,14 @@ public class Sender {
 
 	}
 
+	/**
+	 * Closes the file
+	 * @return if succeeded
+	 * @throws IOException
+	 */
 	public boolean close() throws IOException {
+		Timer timeout = new Timer();
+
 		try {
 			CharFrame sendFrame = new CharFrame('F', "", CRC_CCITT);
 			sendFrame.setNum(nextFrameNum);
@@ -183,9 +221,17 @@ public class Sender {
 			out.println(sendFrame.format());
 
 			// Set timeout
-			ClosingTask closingTask = new ClosingTask(out, CRC_CCITT, nextFrameNum);
-			Timer timeout = new Timer();
-			timeout.schedule(closingTask, TIMEOUT_DELAY, TIMEOUT_DELAY);
+			TimerTask task = new TimerTask() {
+				public void run() {
+					CharFrame req = new CharFrame('F', "", CRC_CCITT);
+					req.setNum(nextFrameNum);
+
+					synchronized (out) {
+						out.println(req.format());
+					}
+				}
+			};
+			timeout.schedule(task, TIMEOUT_DELAY, TIMEOUT_DELAY);
 
 			String receptionFrameString = in.readLine();
 			timeout.cancel();
@@ -197,21 +243,13 @@ public class Sender {
 			}
 		} catch (InvalidFrameException e) {
 			System.out.println("Sender received invalid frame");
-		} catch (IOException e) {
-			System.out.println("IOException in Sender.connect()");
-			return false;
+		} catch (IOException | NullPointerException e) {
+			System.out.println("Receiver already closed");
 		}
-
-		System.out.println("Closed connection");
+		
+		timeout.cancel();
 		socket.close();
+		System.out.println("Closed connection");
 		return true;
-	}
-
-	public void close2() {
-		try {
-			socket.close();
-		} catch (IOException e) {
-			System.out.println("IOException closing Sender socket");
-		}
 	}
 }

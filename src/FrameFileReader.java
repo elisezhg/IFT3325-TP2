@@ -11,13 +11,22 @@ public class FrameFileReader {
     private BufferedReader reader;
     private String polynomial;
 
-    public FrameFileReader(String filename, String polynomial) throws FileNotFoundException, UnsupportedEncodingException {
-        reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename),"UTF-8"));
+    /**
+     * Constructor
+     * 
+     * @param filename   name of the file to be read
+     * @param polynomial polynomial of the charframes
+     * @throws FileNotFoundException
+     * @throws UnsupportedEncodingException
+     */
+    public FrameFileReader(String filename, String polynomial)
+            throws FileNotFoundException, UnsupportedEncodingException {
+        reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
         this.polynomial = polynomial;
     }
 
     /**
-     * reads a frame from open file.
+     * Reads a frame from open file.
      *
      * @return read frame
      */

@@ -85,13 +85,16 @@ forme de trame.
 Retourne la prochaine ligne du fichier sous forme de trame orientée caractère.
 ** InvalidFrameException
 Exception signalant une trame malformée, comportant une erreur.
-** PollTask
-Permet d'envoyer une trame P-bit après un intervalle de temps.
-*** +PollTask(out:PrintWriter, polynomial:String)
-Spécifie un PrintWriter à utiliser lors de l'envoie du poll et
-un polynome pour la création de la trame.
 *** +run()
 envoie un poll par le Printwriter.
+** FrameFileWriter
+*** +FrameFileWriter()
+Créé un nouveau fichier avec la date du jour dans lequel
+on peut écrire les données des trames.
+*** +write(frame:CharFrame)
+Ecrit les données de la trame dans le fichier.
+*** +close()
+Ferme le fichier.
 ** Receiver
 *** +Receiver(portNumber:int)
 Ouvre une serverSocket qui écoute sur le port spécifié.

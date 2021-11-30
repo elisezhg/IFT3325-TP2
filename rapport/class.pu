@@ -8,9 +8,13 @@ class BitStuffer {
 
 class CheckSumCalculator {
     {static} +computeCRC(bitstring: String, polynomial: String): String
+    {static} +cyclicDivisionRest(bitstring: String, polynomial: String): String
     {static} -padLeft(str: String, pad: char, targetLength: int): String
     {static} -xor(s1: String, s2: String): String
-    {static} -cyclicDivisionRest(bitstring: String, polynomial: String): String
+}
+
+class InvalidFrameException {
+
 }
 
 class CharFrame {
@@ -18,6 +22,7 @@ class CharFrame {
     {static} +NUM_BITSIZE: int
     {static} +CRC_BITSIZE: int
     {static} +FLAG_BITSIZE: String
+    -closed: boolean
     -type: String
     -num: String
     -data: String
@@ -46,10 +51,24 @@ class FrameFileReader {
     +getNextFrame(): CharFrame
 }
 
+class FrameFileWriter {
+    -writer: BufferedWriter
+
+    +write(frame: CharFrame)
+    +close()
+}
+
 Class Receiver {
     {static} +CRC_CCITT: String
     {static} +WINDOW_SIZE: int
     {static} +MAX_NUM: int
+    {static} +PRINT_PADDING: String
+    -closed: boolean
+    -serverSocket: ServerSocket
+    -out: PrintWriter
+    -in: BufferedReader
+    -clientSocket: Socket
+    -typeLastSent: char
     
     +listen(int: portNumber)
     +close()
@@ -63,14 +82,13 @@ Class Sender {
     {static} +TIMEOUT_DELAY: int
     -sentFrames: LinkedList<CharFrame>
     -nextFrameNum: int
+    -hostName: String
+    -portNumber: int
+    -socket: Socket
+    -out: PrintWriter
+    -int: BufferedReader
 
     +send(hostName: String, portNumber: int, filename: String) 
-}
-
-class PollTask {
-    -out: PrintWriter
-    +PollTask(out: PrintWriter)
-    +run()
 }
 
 Class CLI {
@@ -80,6 +98,7 @@ Class CLI {
 Class Test {
     {static} +TEST_PORT: int
     {static} +REC_PORT: int
+    {static} +PRINT_PADDING: String
 
     +randError(s: String): String
     +runTests()
@@ -94,13 +113,15 @@ CLI --> Sender
 
 Receiver --> CharFrame
 Sender --> CharFrame
-Sender --> FrameFileReader
-Sender --> PollTask
 
+Receiver --> FrameFileWriter
+Sender --> FrameFileReader
+
+FrameFileWriter --> CharFrame
 FrameFileReader --> CharFrame
-PollTask --> CharFrame
 
 CharFrame --> BitStuffer
 CharFrame --> CheckSumCalculator
+CharFrame --> InvalidFrameException
 
 @enduml

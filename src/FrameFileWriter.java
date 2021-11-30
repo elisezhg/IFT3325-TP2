@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class FrameFileWriter {
     BufferedWriter writer;
-    
+
     public FrameFileWriter() throws IOException {
         String filename = new SimpleDateFormat("'test/out/'yyyyMMddHHmmss'.txt'").format(new Date());
         createOutputFile(filename);
@@ -18,14 +18,15 @@ public class FrameFileWriter {
     }
 
     /**
-     * Create the output file if it doesn't already exist
-     * @param filename
+     * Creates the output file where we write
+     * 
+     * @param filename name of the output file
      */
     public void createOutputFile(String filename) throws IOException {
         try {
             File file = new File(filename);
             file.createNewFile();
-            
+
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
@@ -33,6 +34,11 @@ public class FrameFileWriter {
 
     }
 
+    /**
+     * Writes a frame to the file
+     * 
+     * @param frame frame to be written
+     */
     public void write(CharFrame frame) {
         try {
             writer.write(frame.getData() + "\n");
@@ -42,6 +48,11 @@ public class FrameFileWriter {
         }
     }
 
+    /**
+     * Closes the writer
+     * 
+     * @throws IOException
+     */
     public void close() throws IOException {
         writer.close();
     }

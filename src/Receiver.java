@@ -20,11 +20,22 @@ public class Receiver {
     private BufferedReader in;
     private Socket clientSocket;
 
+    private char typeLastSent;
+
+    /**
+     * Constructor
+     * 
+     * @param portNumber creates new Socket bound to portNumber
+     * @throws IOException
+     */
     public Receiver(int portNumber) throws IOException {
         closed = false;
         this.serverSocket = new ServerSocket(portNumber);
     }
 
+    /**
+     * Closes the socket
+     */
     public void close() {
         try {
             closed = true;
@@ -80,7 +91,7 @@ public class Receiver {
 
                     if (receivedFrame.getType() == 'P') {
                         System.out.println(PRINT_PADDING + "Received poll");
-                        sendReceipt('A', expectedFrameNum);
+                        sendReceipt(typeLastSent, expectedFrameNum);
                     }
 
                     // Establish connection if not done yet
@@ -104,7 +115,7 @@ public class Receiver {
 
                                 // If frame demands to end connection
                             } else if (receivedFrameType == 'F') {
-                                sendReceipt('A', (receivedFrameNum + 1) % (MAX_NUM + 1));
+                                sendReceipt('A', expectedFrameNum);
                                 ffw.close();
                                 close();
                                 System.out.println(PRINT_PADDING + "Ending connection.");
@@ -131,7 +142,7 @@ public class Receiver {
                         }
 
                         if (receivedFrameType == 'C')
-                            sendReceipt('A', 0);
+                            sendReceipt('A', 1);
                     }
                 } catch (InvalidFrameException e) {
                     System.out.println(PRINT_PADDING + "Corrupted frame: ignored");
@@ -146,11 +157,15 @@ public class Receiver {
     }
 
     /**
-     * @param type
-     * @param num
+     * Send a RR or REJ frame to the Sender
+     * 
+     * @param type 'A' for RR, 'R' for REJ
+     * @param num  frame number
      * @throws InvalidFrameException
      */
     private void sendReceipt(char type, int num) throws InvalidFrameException {
+        typeLastSent = type;
+
         if (type == 'A') {
             System.out.println(PRINT_PADDING + "Sending RR for no." + num);
         } else {
